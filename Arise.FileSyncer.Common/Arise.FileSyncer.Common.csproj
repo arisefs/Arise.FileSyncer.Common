@@ -1,7 +1,19 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
+    <Authors>Csányi István</Authors>
+    <Company />
+    <Description>Glue for the FileSyncer Core.</Description>
+    <Copyright>Copyright ©2019 Csányi István</Copyright>
+    <PackageProjectUrl>https://dev.azure.com/AriseProject/Arise.FileSyncer.Common</PackageProjectUrl>
+    <RepositoryUrl>https://AriseProject@dev.azure.com/AriseProject/Arise.FileSyncer.Common/_git/Arise.FileSyncer.Common</RepositoryUrl>
+    <RepositoryType>git</RepositoryType>
   </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Arise.FileSyncer.Core" Version="1.0.14" />
+    <PackageReference Include="fastJSON" Version="2.2.0.1" />
+  </ItemGroup>
 
 </Project>
