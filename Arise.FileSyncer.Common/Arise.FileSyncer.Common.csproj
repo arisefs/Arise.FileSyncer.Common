@@ -11,8 +11,12 @@
     <RepositoryType>git</RepositoryType>
   </PropertyGroup>
 
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+  </PropertyGroup>
+
   <ItemGroup>
-    <PackageReference Include="Arise.FileSyncer.Core" Version="1.0.14" />
+    <PackageReference Include="Arise.FileSyncer.Core" Version="1.0.20" />
     <PackageReference Include="fastJSON" Version="2.2.0.1" />
   </ItemGroup>
 
