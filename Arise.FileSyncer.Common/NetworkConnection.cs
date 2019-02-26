@@ -17,10 +17,6 @@ namespace Arise.FileSyncer.Common
         private readonly TcpClient tcpClient;
         private readonly EncryptedStream encryptedStream;
 
-        private const int keySize = 800;
-        private const int keyChunkSize = 80;
-        private const int keyChunkCount = keySize / keyChunkSize;
-
         public NetworkConnection(TcpClient tcpClient, Guid id, bool initiator)
         {
             this.tcpClient = tcpClient;
@@ -32,7 +28,7 @@ namespace Arise.FileSyncer.Common
 
                 if (initiator)
                 {
-                    using (var rsa = new RSACryptoServiceProvider(1024))
+                    using (var rsa = new RSACryptoServiceProvider(512))
                     {
                         RSAParameters rsaKeyInfo = rsa.ExportParameters(false);
 
@@ -41,26 +37,20 @@ namespace Arise.FileSyncer.Common
                         stream.Write(rsaKeyInfo.Exponent);
                         stream.Flush();
 
-                        // Receive symmetric key
-                        byte[] key = new byte[keySize];
-                        for (int i = 0; i < keyChunkCount; i++)
-                        {
-                            var keyChunk = rsa.Decrypt(stream.ReadByteArray(), true);
-                            Buffer.BlockCopy(keyChunk, 0, key, i * keyChunkSize, keyChunkSize);
-                        }
-
-                        // And IV
-                        byte[] iv = rsa.Decrypt(stream.ReadByteArray(), true);
+                        // Receive and flip seeds
+                        int writeSeed = BitConverter.ToInt32(rsa.Decrypt(stream.ReadByteArray(), true), 0);
+                        int readSeed = BitConverter.ToInt32(rsa.Decrypt(stream.ReadByteArray(), true), 0);
 
                         // Create encrypted stream
-                        encryptedStream = new EncryptedStream(stream, key, iv);
+                        encryptedStream = new EncryptedStream(stream, readSeed, writeSeed);
                     }
                 }
                 else
                 {
-                    // Generate symmetric key
-                    byte[] key = GenerateRandomArray(800);
-                    byte[] iv = GenerateRandomArray(4);
+                    // Generate seeds
+                    var random = new FastRandom();
+                    int readSeed = random.NextInt();
+                    int writeSeed = random.NextInt();
 
                     // Receive public key
                     RSAParameters rsaKeyInfo = new RSAParameters
@@ -73,37 +63,20 @@ namespace Arise.FileSyncer.Common
                     {
                         rsa.ImportParameters(rsaKeyInfo);
 
-                        // Encrypt and write symmetric key
-                        byte[] keyChunk = new byte[keyChunkSize];
-                        for (int i = 0; i < keyChunkCount; i++)
-                        {
-                            Buffer.BlockCopy(key, i * keyChunkSize, keyChunk, 0, keyChunkSize);
-                            stream.Write(rsa.Encrypt(keyChunk, true));
-                        }
-
-                        // And IV
-                        stream.Write(rsa.Encrypt(iv, true));
+                        // Encrypt and write seeds
+                        stream.Write(rsa.Encrypt(BitConverter.GetBytes(readSeed), true));
+                        stream.Write(rsa.Encrypt(BitConverter.GetBytes(writeSeed), true));
                         stream.Flush();
                     }
 
                     // Create encrypted stream
-                    encryptedStream = new EncryptedStream(stream, key, iv);
+                    encryptedStream = new EncryptedStream(stream, readSeed, writeSeed);
                 }
             }
             catch (Exception ex)
             {
                 Log.Debug($"{this}: Connection encryption initialization failed! Ex.:{ex.Message}");
                 throw ex;
-            }
-        }
-
-        private byte[] GenerateRandomArray(int length)
-        {
-            using (var rng = new RNGCryptoServiceProvider())
-            {
-                byte[] random = new byte[length];
-                rng.GetBytes(random);
-                return random;
             }
         }
 
