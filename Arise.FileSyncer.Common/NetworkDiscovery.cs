@@ -22,7 +22,7 @@ namespace Arise.FileSyncer.Common
         private byte[] message;
         private volatile bool isActive = false;
 
-        private const long netVersion = 1;
+        private const long NetVersion = 2;
 
         public NetworkDiscovery(SyncerConfig syncerConfig, SyncerPeer syncerPeer, NetworkListener listener)
         {
@@ -75,7 +75,7 @@ namespace Arise.FileSyncer.Common
                     {
                         // Check netVersion
                         long remoteNetVersion = readStream.ReadInt64();
-                        if (remoteNetVersion != netVersion) continue;
+                        if (remoteNetVersion != NetVersion) continue;
 
                         // Check DeviceId
                         Guid remoteDeviceId = readStream.ReadGuid();
@@ -135,7 +135,7 @@ namespace Arise.FileSyncer.Common
             using (MemoryStream writeStream = new MemoryStream())
             {
                 // netVersion has to be the first written data
-                writeStream.Write(netVersion);
+                writeStream.Write(NetVersion);
 
                 writeStream.Write(syncerConfig.PeerSettings.DeviceId);
                 writeStream.Write(listener.LocalEndpoint.Address.GetAddressBytes());
