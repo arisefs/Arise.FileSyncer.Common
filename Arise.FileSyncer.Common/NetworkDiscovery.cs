@@ -21,6 +21,7 @@ namespace Arise.FileSyncer.Common
         private IPEndPoint receiveEndPoint;
         private byte[] message;
         private volatile bool isActive = false;
+        private Task task = null;
 
         private const long NetVersion = 2;
 
@@ -34,7 +35,7 @@ namespace Arise.FileSyncer.Common
             UpdateMessage();
             CreateSocket();
 
-            Task.Factory.StartNew(DiscoveryListener, TaskCreationOptions.LongRunning);
+            task = Task.Factory.StartNew(DiscoveryListener, TaskCreationOptions.LongRunning);
         }
 
         public bool SendDiscoveryMessage()
@@ -50,6 +51,24 @@ namespace Arise.FileSyncer.Common
             }
 
             return true;
+        }
+
+        public void RefreshPort()
+        {
+            UpdateEndPoints();
+            CreateSocket();
+
+            try
+            {
+                task?.Wait(5000);
+            }
+            catch (Exception)
+            {
+                Log.Error($"{this}: Failed to shut down discovery task. (timeout)");
+                return;
+            }
+
+            task = Task.Factory.StartNew(DiscoveryListener, TaskCreationOptions.LongRunning);
         }
 
         private void DiscoveryListener()
