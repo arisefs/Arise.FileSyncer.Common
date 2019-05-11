@@ -177,7 +177,7 @@ namespace Arise.FileSyncer.Common
 
             public ProgressArchive(int length)
             {
-                Index = 0;
+                index = 0;
                 Archive = new Progress[length];
             }
 
