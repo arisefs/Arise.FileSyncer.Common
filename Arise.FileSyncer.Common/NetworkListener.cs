@@ -103,7 +103,18 @@ namespace Arise.FileSyncer.Common
         private void AddClientToSyncer(Guid remoteDeviceId, TcpClient client, bool initiator)
         {
             NetworkConnection connection = new NetworkConnection(client, remoteDeviceId, initiator);
-            addConnection(connection);
+
+            try
+            {
+                addConnection(connection);
+            }
+            catch (Exception ex)
+            {
+                Log.Verbose($"{this}: Failed to add connection: {ex.Message}");
+
+                // Release resources on error
+                connection?.Dispose();
+            }
         }
 
         #region IDisposable Support

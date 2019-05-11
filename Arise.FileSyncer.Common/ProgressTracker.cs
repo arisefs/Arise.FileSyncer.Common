@@ -7,34 +7,55 @@ using System.Timers;
 
 namespace Arise.FileSyncer.Common
 {
-    public class ProgressUpdate
+    public struct ProgressStatus : ISyncProgress
     {
-        public ISyncProgress Progress { get; }
+        /// <summary>
+        /// The ID of the connection
+        /// </summary>
+        public Guid Id { get; }
+
+        /// <summary>
+        /// Indeterminate
+        /// </summary>
+        public bool Indeterminate { get; }
+
+        /// <summary>
+        /// The current state in byte
+        /// </summary>
+        public long Current { get; }
+
+        /// <summary>
+        /// The target of the progress in bytes
+        /// </summary>
+        public long Maximum { get; }
 
         /// <summary>
         /// Speed in byte/second
         /// </summary>
         public double Speed { get; }
 
-        public ProgressUpdate(ISyncProgress progress, double speed)
+        public ProgressStatus(Guid id, ISyncProgress progress, double speed)
         {
-            Progress = progress;
+            Id = id;
+            Indeterminate = progress.Indeterminate;
+            Current = progress.Current;
+            Maximum = progress.Maximum;
             Speed = speed;
         }
     }
 
     public class ProgressUpdateEventArgs : EventArgs
     {
-        public Dictionary<Guid, ProgressUpdate> Progresses;
+        public ICollection<ProgressStatus> Progresses;
 
         public ProgressUpdateEventArgs()
         {
-            Progresses = new Dictionary<Guid, ProgressUpdate>(0);
+            Progresses = new ProgressStatus[0];
         }
 
-        public ProgressUpdateEventArgs(Dictionary<Guid, ProgressUpdate> progressUpdates)
+        public ProgressUpdateEventArgs(ICollection<ProgressStatus> progresses)
         {
-            Progresses = progressUpdates;
+            Progresses = progresses;
         }
     }
 
@@ -66,7 +87,7 @@ namespace Arise.FileSyncer.Common
             progressTimer.Start();
         }
 
-        private void UpdateArchive()
+        private void UpdateArchives()
         {
             foreach (var archive in progressArchive)
             {
@@ -79,49 +100,18 @@ namespace Arise.FileSyncer.Common
 
         private void ProgressTimer_Elapsed(object sender, ElapsedEventArgs e)
         {
-            UpdateArchive();
+            UpdateArchives();
 
-            var progresses = new Dictionary<Guid, ProgressUpdate>(progressArchive.Count);
-            foreach (var archive in progressArchive)
+            var progresses = new List<ProgressStatus>(progressArchive.Count);
+            foreach (var archiveKV in progressArchive)
             {
-                var update = CalcUpdate(archive.Value);
-                if (update != null)
+                if (archiveKV.Value.CalcStatus(archiveKV.Key, speedInterval, out var status))
                 {
-                    progresses.Add(archive.Key, update);
+                    progresses.Add(status);
                 }
             }
 
             OnProgressUpdate(progresses);
-        }
-
-        private ProgressUpdate CalcUpdate(ProgressArchive pa)
-        {
-            Progress mostRecent = pa.Archive[(pa.Index + pa.Archive.Length - 1) % pa.Archive.Length];
-            Progress lastProgress = null;
-            long speedOverall = 0;
-            long speedNum = 0;
-
-            for (int i = 0; i < pa.Archive.Length; i++)
-            {
-                int index = (i + pa.Index) % pa.Archive.Length;
-                var progress = pa.Archive[index];
-
-                if (progress != null && !progress.Indeterminate && progress.Maximum > 0)
-                {
-                    if (lastProgress != null)
-                    {
-                        speedOverall += progress.Current - lastProgress.Current;
-                        speedNum++;
-                    }
-
-                    lastProgress = progress;
-                }
-            }
-
-            if (speedNum == 0 || mostRecent == null) return null;
-
-            double avarage = (double)speedOverall / speedNum;
-            return new ProgressUpdate(mostRecent, avarage / speedInterval);
         }
 
         private void Peer_ConnectionAdded(object sender, ConnectionAddedEventArgs e)
@@ -134,7 +124,7 @@ namespace Arise.FileSyncer.Common
             progressArchive.TryRemove(e.Id, out var _);
         }
 
-        private void OnProgressUpdate(Dictionary<Guid, ProgressUpdate> progresses)
+        private void OnProgressUpdate(ICollection<ProgressStatus> progresses)
         {
             ProgressUpdate?.Invoke(this, new ProgressUpdateEventArgs(progresses));
         }
@@ -170,23 +160,64 @@ namespace Arise.FileSyncer.Common
 
         private class ProgressArchive
         {
-            public int Index {
-                get => index;
-                set => index = value % Archive.Length;
+            private int lastIndex;
+            public int LastIndex
+            {
+                get => lastIndex;
+                set => lastIndex = value % Archive.Length;
             }
-            public Progress[] Archive { get; }
 
-            private int index;
+            public Progress[] Archive { get; }
 
             public ProgressArchive(int length)
             {
-                index = 0;
+                lastIndex = length - 1;
                 Archive = new Progress[length];
             }
 
             public void AddNext(ISyncProgress progress)
             {
-                Archive[Index++] = new Progress(progress);
+                Archive[++LastIndex] = new Progress(progress);
+            }
+
+            public bool CalcStatus(Guid id, double speedInterval, out ProgressStatus status)
+            {
+                Progress mostRecent = Archive[LastIndex];
+                if (mostRecent == null)
+                {
+                    status = new ProgressStatus();
+                    return false;
+                }
+
+                Progress lastProgress = null;
+                long speedOverall = 0;
+                long speedCount = 0;
+
+                for (int i = 1; i < Archive.Length + 1; i++)
+                {
+                    var progress = Archive[(i + LastIndex) % Archive.Length];
+
+                    if (progress != null && !progress.Indeterminate)
+                    {
+                        if (lastProgress != null)
+                        {
+                            speedOverall += progress.Current - lastProgress.Current;
+                            speedCount++;
+                        }
+
+                        lastProgress = progress;
+                    }
+                }
+
+                if (speedCount == 0)
+                {
+                    status = new ProgressStatus();
+                    return false;
+                }
+
+                double avarage = (double)speedOverall / speedCount;
+                status = new ProgressStatus(id, mostRecent, avarage / speedInterval);
+                return true;
             }
         }
 
