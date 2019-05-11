@@ -34,7 +34,7 @@ namespace Arise.FileSyncer.Common
             }
             catch (Exception ex)
             {
-                Log.Verbose($"{this}: {ex.Message}");
+                Log.Error($"{this}: Failed to create the listener: {ex.Message}");
                 return;
             }
         }
@@ -47,7 +47,7 @@ namespace Arise.FileSyncer.Common
             }
             catch (Exception ex)
             {
-                Log.Verbose($"{this}: Failed to stop the listener: {ex.Message}");
+                Log.Error($"{this}: Failed to stop the listener: {ex.Message}");
             }
         }
 
@@ -68,7 +68,7 @@ namespace Arise.FileSyncer.Common
             }
             catch (Exception ex)
             {
-                Log.Verbose($"{this}: {ex.Message}");
+                Log.Verbose($"{this}: Failed to accept connection: {ex.Message}");
 
                 // Release resources on error
                 client?.Dispose();
@@ -93,7 +93,7 @@ namespace Arise.FileSyncer.Common
             }
             catch (Exception ex)
             {
-                Log.Verbose($"{this}: {ex.Message}");
+                Log.Verbose($"{this}: Failed to connect: {ex.Message}");
 
                 // Release resources on error
                 client.Dispose();
