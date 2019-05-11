@@ -96,16 +96,19 @@ namespace Arise.FileSyncer.Common
 
         private ProgressUpdate CalcUpdate(ProgressArchive pa)
         {
-            Progress mostRecent = pa.Archive[pa.Index];
+            Progress mostRecent = pa.Archive[(pa.Index + pa.Archive.Length - 1) % pa.Archive.Length];
             Progress lastProgress = null;
             long speedOverall = 0;
             long speedNum = 0;
 
-            foreach (var progress in pa.Archive)
+            for (int i = 0; i < pa.Archive.Length; i++)
             {
-                if (progress != null)
+                int index = (i + pa.Index) % pa.Archive.Length;
+                var progress = pa.Archive[index];
+
+                if (progress != null && !progress.Indeterminate && progress.Maximum > 0)
                 {
-                    if (lastProgress != null && !progress.Indeterminate && !lastProgress.Indeterminate)
+                    if (lastProgress != null)
                     {
                         speedOverall += progress.Current - lastProgress.Current;
                         speedNum++;
@@ -169,7 +172,7 @@ namespace Arise.FileSyncer.Common
         {
             public int Index {
                 get => index;
-                set => index = (value == Archive.Length) ? 0 : value;
+                set => index = value % Archive.Length;
             }
             public Progress[] Archive { get; }
 

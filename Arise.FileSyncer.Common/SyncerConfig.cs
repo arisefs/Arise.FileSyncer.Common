@@ -77,12 +77,7 @@ namespace Arise.FileSyncer.Common
         private static string GetConfigFilePath()
         {
             string configFolder = GetConfigFolderPath();
-
-#if DEBUG
-            const string fileName = "config.debug.json";
-#else
             const string fileName = "config.json";
-#endif
 
             return Path.Combine(configFolder, fileName);
         }
