@@ -172,7 +172,8 @@ namespace Arise.FileSyncer.Common
 
             public void AddNext(ISyncProgress progress)
             {
-                Archive[++LastIndex] = new Progress(progress);
+                LastIndex++;
+                Archive[LastIndex] = new Progress(progress);
             }
 
             public bool CalcStatus(Guid id, double speedInterval, out ProgressStatus status)
