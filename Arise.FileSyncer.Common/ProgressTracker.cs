@@ -1,9 +1,8 @@
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
-using System.Text;
+using System.Threading;
 using Arise.FileSyncer.Core;
-using System.Timers;
 
 namespace Arise.FileSyncer.Common
 {
@@ -80,11 +79,7 @@ namespace Arise.FileSyncer.Common
             peer.ConnectionAdded += Peer_ConnectionAdded;
             peer.ConnectionRemoved += Peer_ConnectionRemoved;
 
-            progressTimer = new Timer();
-            progressTimer.Elapsed += ProgressTimer_Elapsed;
-            progressTimer.Interval = updateInterval;
-            progressTimer.AutoReset = true;
-            progressTimer.Start();
+            progressTimer = new Timer(ProgressTimerCallback, null, updateInterval, updateInterval);
         }
 
         private void UpdateArchives()
@@ -98,7 +93,7 @@ namespace Arise.FileSyncer.Common
             }
         }
 
-        private void ProgressTimer_Elapsed(object sender, ElapsedEventArgs e)
+        private void ProgressTimerCallback(object state)
         {
             UpdateArchives();
 
