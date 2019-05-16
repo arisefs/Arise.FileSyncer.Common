@@ -63,7 +63,7 @@ namespace Arise.FileSyncer.Common
                 {
                     client = tcpListener.AcceptTcpClient();
                     Guid remoteDeviceId = client.GetStream().ReadGuid();
-                    AddClientToSyncer(remoteDeviceId, client, null);
+                    AddClientToSyncer(remoteDeviceId, client, syncerConfig.KeyInfo);
                     client = null;
                 }
             }
@@ -90,7 +90,7 @@ namespace Arise.FileSyncer.Common
                 }
 
                 client.GetStream().Write(syncerConfig.PeerSettings.DeviceId);
-                AddClientToSyncer(id, client, syncerConfig.KeyInfo);
+                AddClientToSyncer(id, client, null);
             }
             catch (Exception ex)
             {
