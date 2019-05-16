@@ -41,6 +41,15 @@ namespace Arise.FileSyncer.Common
             Maximum = progress.Maximum;
             Speed = speed;
         }
+
+        public ProgressStatus(Guid id, bool indeterminate, long current, long maximum, double speed)
+        {
+            Id = id;
+            Indeterminate = indeterminate;
+            Current = current;
+            Maximum = maximum;
+            Speed = speed;
+        }
     }
 
     public class ProgressUpdateEventArgs : EventArgs
