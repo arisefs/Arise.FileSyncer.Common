@@ -4,6 +4,8 @@ namespace Arise.FileSyncer.Common.Security
 {
     public class KeyInfo
     {
+        public static int RSAKeySize = 2048;
+
         // Public Key Info
         public byte[] Modulus { get; set; }
         public byte[] Exponent { get; set; }
@@ -35,7 +37,7 @@ namespace Arise.FileSyncer.Common.Security
 
         public static KeyInfo Generate()
         {
-            using (var rsa = new RSACryptoServiceProvider(2048))
+            using (var rsa = new RSACryptoServiceProvider(RSAKeySize))
             {
                 RSAParameters rsaKeyInfo = rsa.ExportParameters(true);
 
