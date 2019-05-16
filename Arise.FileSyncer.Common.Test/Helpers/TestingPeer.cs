@@ -17,11 +17,9 @@ namespace Arise.FileSyncer.Common.Test.Helpers
             TestingData.CreateTestDirectory(index);
 
             Guid localId = new Guid(new byte[] { 9, 9, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, index });
-            config = new SyncerConfig
-            {
-                DiscoveryPort = 13965,
-                PeerSettings = new SyncerPeerSettings(localId, $"TestPeer:{index}"),
-            };
+            config = new SyncerConfig();
+            config.Reset(new SyncerPeerSettings(localId, $"TestPeer:{index}"));
+            config.DiscoveryPort = 13965;
 
             int remoteIndex = (index == 0) ? 1 : 0;
             Guid remoteId = new Guid(new byte[] { 9, 9, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, (byte)remoteIndex });

@@ -3,6 +3,7 @@ using System.Net;
 using System.Net.Sockets;
 using System.Threading.Tasks;
 using Arise.FileSyncer.Common.Helpers;
+using Arise.FileSyncer.Common.Security;
 using Arise.FileSyncer.Core;
 using Arise.FileSyncer.Core.Serializer;
 
@@ -62,7 +63,7 @@ namespace Arise.FileSyncer.Common
                 {
                     client = tcpListener.AcceptTcpClient();
                     Guid remoteDeviceId = client.GetStream().ReadGuid();
-                    AddClientToSyncer(remoteDeviceId, client, true);
+                    AddClientToSyncer(remoteDeviceId, client, null);
                     client = null;
                 }
             }
@@ -89,7 +90,7 @@ namespace Arise.FileSyncer.Common
                 }
 
                 client.GetStream().Write(syncerConfig.PeerSettings.DeviceId);
-                AddClientToSyncer(id, client, false);
+                AddClientToSyncer(id, client, syncerConfig.KeyInfo);
             }
             catch (Exception ex)
             {
@@ -100,9 +101,9 @@ namespace Arise.FileSyncer.Common
             }
         }
 
-        private void AddClientToSyncer(Guid remoteDeviceId, TcpClient client, bool initiator)
+        private void AddClientToSyncer(Guid remoteDeviceId, TcpClient client, KeyInfo keyInfo)
         {
-            NetworkConnection connection = new NetworkConnection(client, remoteDeviceId, initiator);
+            NetworkConnection connection = new NetworkConnection(client, remoteDeviceId, keyInfo);
 
             try
             {

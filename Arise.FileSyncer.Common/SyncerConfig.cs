@@ -1,6 +1,7 @@
 using System;
 using System.IO;
 using System.Net.Sockets;
+using Arise.FileSyncer.Common.Security;
 using Arise.FileSyncer.Core;
 
 namespace Arise.FileSyncer.Common
@@ -16,7 +17,6 @@ namespace Arise.FileSyncer.Common
         public SyncerPeerSettings PeerSettings
         {
             get => config.PeerSettings;
-            set => config.PeerSettings = value;
         }
 
         public AddressFamily ListenerAddressFamily
@@ -31,6 +31,11 @@ namespace Arise.FileSyncer.Common
             set => config.DiscoveryPort = value;
         }
 
+        public KeyInfo KeyInfo
+        {
+            get => config.KeyInfo;
+        }
+
         private readonly string filePath;
         private ConfigStorage config;
 
@@ -38,9 +43,6 @@ namespace Arise.FileSyncer.Common
         {
             config = new ConfigStorage();
             filePath = GetConfigFilePath();
-
-            ListenerAddressFamily = DefaultListenerAddressFamily;
-            DiscoveryPort = DefaultDiscoveryPort;
         }
 
         /// <summary>
@@ -68,10 +70,23 @@ namespace Arise.FileSyncer.Common
                     config.DiscoveryPort = DefaultDiscoveryPort;
                 }
 
+                if (config.KeyInfo == null)
+                {
+                    config.KeyInfo = KeyInfo.Generate();
+                }
+
                 return config.PeerSettings != null;
             }
 
             return false;
+        }
+
+        public void Reset(SyncerPeerSettings peerSettings)
+        {
+            config.PeerSettings = peerSettings;
+            ListenerAddressFamily = DefaultListenerAddressFamily;
+            DiscoveryPort = DefaultDiscoveryPort;
+            config.KeyInfo = KeyInfo.Generate();
         }
 
         private static string GetConfigFilePath()
@@ -104,6 +119,7 @@ namespace Arise.FileSyncer.Common
             public SyncerPeerSettings PeerSettings;
             public AddressFamily ListenerAddressFamily;
             public int DiscoveryPort;
+            public KeyInfo KeyInfo;
         }
     }
 }
