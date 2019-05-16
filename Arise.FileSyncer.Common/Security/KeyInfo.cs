@@ -35,7 +35,7 @@ namespace Arise.FileSyncer.Common.Security
 
         public static KeyInfo Generate()
         {
-            using (var rsa = new RSACryptoServiceProvider(4096))
+            using (var rsa = new RSACryptoServiceProvider(2048))
             {
                 RSAParameters rsaKeyInfo = rsa.ExportParameters(true);
 
