@@ -33,18 +33,19 @@ namespace Arise.FileSyncer.Common
             set => config.DiscoveryPort = value;
         }
 
-        public KeyInfo KeyInfo
-        {
-            get => config.KeyInfo;
-        }
+        public KeyInfo KeyInfo { get => keyInfo; }
 
-        private readonly string filePath;
+        private readonly string configPath;
+        private readonly string keyPath;
+
         private ConfigStorage config;
+        private KeyInfo keyInfo;
 
         public SyncerConfig()
         {
             config = new ConfigStorage();
-            filePath = GetConfigFilePath();
+            configPath = GetConfigFilePath();
+            keyPath = GetKeyFilePath();
         }
 
         /// <summary>
@@ -52,7 +53,15 @@ namespace Arise.FileSyncer.Common
         /// </summary>
         public bool Save()
         {
-            return SaveManager.Save(config, filePath);
+            return SaveManager.Save(config, configPath);
+        }
+
+        /// <summary>
+        /// Saves the key info to the disk
+        /// </summary>
+        public bool SaveKey()
+        {
+            return SaveManager.Save(keyInfo, keyPath);
         }
 
         /// <summary>
@@ -60,7 +69,7 @@ namespace Arise.FileSyncer.Common
         /// </summary>
         public bool Load()
         {
-            if (SaveManager.Load(ref config, filePath))
+            if (SaveManager.Load(ref config, configPath))
             {
                 if (config.ListenerAddressFamily == AddressFamily.Unspecified)
                 {
@@ -72,12 +81,12 @@ namespace Arise.FileSyncer.Common
                     config.DiscoveryPort = DefaultDiscoveryPort;
                 }
 
-                if (config.KeyInfo == null || !config.KeyInfo.Check())
-                {
-                    config.KeyInfo = KeyInfo.Generate(RSAKeySize);
-                }
-
                 return config.PeerSettings != null;
+            }
+
+            if (!SaveManager.Load(ref keyInfo, keyPath) || keyInfo == null || !keyInfo.Check())
+            {
+                keyInfo = KeyInfo.Generate(RSAKeySize);
             }
 
             return false;
@@ -88,13 +97,21 @@ namespace Arise.FileSyncer.Common
             config.PeerSettings = peerSettings;
             ListenerAddressFamily = DefaultListenerAddressFamily;
             DiscoveryPort = DefaultDiscoveryPort;
-            config.KeyInfo = KeyInfo.Generate(RSAKeySize);
+            keyInfo = KeyInfo.Generate(RSAKeySize);
         }
 
         private static string GetConfigFilePath()
         {
             string configFolder = GetConfigFolderPath();
             const string fileName = "config.json";
+
+            return Path.Combine(configFolder, fileName);
+        }
+
+        private static string GetKeyFilePath()
+        {
+            string configFolder = GetConfigFolderPath();
+            const string fileName = "key.json";
 
             return Path.Combine(configFolder, fileName);
         }
@@ -121,7 +138,6 @@ namespace Arise.FileSyncer.Common
             public SyncerPeerSettings PeerSettings;
             public AddressFamily ListenerAddressFamily;
             public int DiscoveryPort;
-            public KeyInfo KeyInfo;
         }
     }
 }
