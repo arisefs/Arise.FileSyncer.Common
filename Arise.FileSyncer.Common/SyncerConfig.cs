@@ -69,6 +69,11 @@ namespace Arise.FileSyncer.Common
         /// </summary>
         public bool Load()
         {
+            if (!SaveManager.Load(ref keyInfo, keyPath) || keyInfo == null || !keyInfo.Check())
+            {
+                keyInfo = KeyInfo.Generate(RSAKeySize);
+            }
+
             if (SaveManager.Load(ref config, configPath))
             {
                 if (config.ListenerAddressFamily == AddressFamily.Unspecified)
@@ -82,11 +87,6 @@ namespace Arise.FileSyncer.Common
                 }
 
                 return config.PeerSettings != null;
-            }
-
-            if (!SaveManager.Load(ref keyInfo, keyPath) || keyInfo == null || !keyInfo.Check())
-            {
-                keyInfo = KeyInfo.Generate(RSAKeySize);
             }
 
             return false;
