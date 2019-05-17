@@ -14,6 +14,8 @@ namespace Arise.FileSyncer.Common
         public delegate string DelegateGetConfigFolderPath();
         public static DelegateGetConfigFolderPath GetConfigFolderPath = DefaultGetConfigFolderPath;
 
+        public static int RSAKeySize = 2048;
+
         public SyncerPeerSettings PeerSettings
         {
             get => config.PeerSettings;
@@ -70,9 +72,9 @@ namespace Arise.FileSyncer.Common
                     config.DiscoveryPort = DefaultDiscoveryPort;
                 }
 
-                if (config.KeyInfo == null)
+                if (config.KeyInfo == null || !config.KeyInfo.Check())
                 {
-                    config.KeyInfo = KeyInfo.Generate();
+                    config.KeyInfo = KeyInfo.Generate(RSAKeySize);
                 }
 
                 return config.PeerSettings != null;
@@ -86,7 +88,7 @@ namespace Arise.FileSyncer.Common
             config.PeerSettings = peerSettings;
             ListenerAddressFamily = DefaultListenerAddressFamily;
             DiscoveryPort = DefaultDiscoveryPort;
-            config.KeyInfo = KeyInfo.Generate();
+            config.KeyInfo = KeyInfo.Generate(RSAKeySize);
         }
 
         private static string GetConfigFilePath()
