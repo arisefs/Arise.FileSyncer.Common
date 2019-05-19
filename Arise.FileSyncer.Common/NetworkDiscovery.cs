@@ -102,6 +102,15 @@ namespace Arise.FileSyncer.Common
 
                         if (syncerPeer.DoesConnectionExist(remoteDeviceId)) continue;
 
+                        // Don't connect if not paired and not pairing
+                        if (!syncerPeer.AllowPairing)
+                        {
+                            if (!syncerPeer.Settings.DeviceKeys.ContainsKey(remoteDeviceId))
+                            {
+                                continue;
+                            }
+                        }
+
                         // Get listener address
                         var listenerIP = new IPAddress(readStream.ReadByteArray());
                         int listenerPort = readStream.ReadInt32();
