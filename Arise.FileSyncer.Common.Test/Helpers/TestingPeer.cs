@@ -11,6 +11,7 @@ namespace Arise.FileSyncer.Common.Test.Helpers
         public readonly NetworkListener listener;
         public readonly SyncerConfig config;
         public readonly SyncerPeer peer;
+        public readonly KeyConfig key;
 
         public TestingPeer(byte index)
         {
@@ -18,13 +19,16 @@ namespace Arise.FileSyncer.Common.Test.Helpers
 
             Guid localId = new Guid(new byte[] { 9, 9, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, index });
             config = new SyncerConfig();
-            config.Reset(new SyncerPeerSettings(localId, $"TestPeer:{index}"));
+            config.ResetConfig(new SyncerPeerSettings(localId, $"TestPeer:{index}"));
             config.DiscoveryPort = 13965;
+
+            key = new KeyConfig();
+            key.Reset();
 
             int remoteIndex = (index == 0) ? 1 : 0;
             Guid remoteId = new Guid(new byte[] { 9, 9, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, (byte)remoteIndex });
-            Guid key = sharedId;
-            config.PeerSettings.DeviceKeys.TryAdd(remoteId, key);
+            Guid remoteKey = sharedId;
+            config.PeerSettings.DeviceKeys.TryAdd(remoteId, remoteKey);
 
             config.PeerSettings.Profiles.TryAdd(sharedId, new SyncProfile.Creator()
             {
@@ -37,7 +41,7 @@ namespace Arise.FileSyncer.Common.Test.Helpers
             });
 
             peer = new SyncerPeer(config.PeerSettings);
-            listener = new NetworkListener(config, peer.AddConnection);
+            listener = new NetworkListener(config, key, peer.AddConnection);
             discovery = new NetworkDiscovery(config, peer, listener);
 
             peer.ConnectionAdded += Peer_ConnectionAdded;

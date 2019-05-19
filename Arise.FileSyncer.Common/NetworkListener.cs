@@ -15,13 +15,15 @@ namespace Arise.FileSyncer.Common
         public IPEndPoint LocalEndpoint => tcpListener?.LocalEndpoint as IPEndPoint;
 
         private readonly SyncerConfig syncerConfig;
+        private readonly KeyConfig keyConfig;
         private readonly Func<INetConnection, bool> addConnection;
         private readonly TcpListener tcpListener;
         private volatile bool isActive = false;
 
-        public NetworkListener(SyncerConfig syncerConfig, Func<INetConnection, bool> addConnection)
+        public NetworkListener(SyncerConfig syncerConfig, KeyConfig keyConfig, Func<INetConnection, bool> addConnection)
         {
             this.syncerConfig = syncerConfig;
+            this.keyConfig = keyConfig;
             this.addConnection = addConnection;
 
             var address = NetworkHelper.GetLocalIPAddress(syncerConfig.ListenerAddressFamily);
@@ -63,7 +65,7 @@ namespace Arise.FileSyncer.Common
                 {
                     client = tcpListener.AcceptTcpClient();
                     Guid remoteDeviceId = client.GetStream().ReadGuid();
-                    AddClientToSyncer(remoteDeviceId, client, syncerConfig.KeyInfo);
+                    AddClientToSyncer(remoteDeviceId, client, keyConfig.KeyInfo);
                     client = null;
                 }
             }

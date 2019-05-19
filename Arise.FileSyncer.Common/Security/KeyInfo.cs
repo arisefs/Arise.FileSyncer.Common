@@ -33,6 +33,10 @@ namespace Arise.FileSyncer.Common.Security
             };
         }
 
+        /// <summary>
+        /// Checks the key if it has any mising data
+        /// </summary>
+        /// <returns>The key has no issues</returns>
         public bool Check()
         {
             return Modulus != null
@@ -45,6 +49,11 @@ namespace Arise.FileSyncer.Common.Security
                 && Q != null;
         }
 
+        /// <summary>
+        /// Generates a new key using the specified size
+        /// </summary>
+        /// <param name="keySize">The RSA key size</param>
+        /// <returns>Key</returns>
         public static KeyInfo Generate(int keySize)
         {
             using (var rsa = new RSACryptoServiceProvider(keySize))

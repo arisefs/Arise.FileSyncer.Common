@@ -12,7 +12,7 @@ namespace Arise.FileSyncer.Common.Test
         public IntegrationTest()
         {
             Log.Info("Arise FileSyncer Test App");
-            SyncerConfig.GetConfigFolderPath = () => "";
+            Config.GetConfigFolderPath = () => "";
 
             var peerS = new TestingPeer(0);
             var peerR = new TestingPeer(1);

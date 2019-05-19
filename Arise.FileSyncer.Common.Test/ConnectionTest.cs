@@ -11,14 +11,14 @@ namespace Arise.FileSyncer.Common.Test
     {
         public ConnectionTest()
         {
-            SyncerConfig.GetConfigFolderPath = () => "";
+            Config.GetConfigFolderPath = () => "";
         }
 
         [TestMethod]
         public void KeyInfoLoad()
         {
-            SyncerConfig config = new SyncerConfig();
-            config.Reset(new Core.SyncerPeerSettings());
+            KeyConfig config = new KeyConfig();
+            config.Reset();
 
             Assert.IsNotNull(config.KeyInfo);
         }
@@ -28,8 +28,8 @@ namespace Arise.FileSyncer.Common.Test
         {
             const int data = 8723563;
 
-            SyncerConfig config = new SyncerConfig();
-            config.Reset(new Core.SyncerPeerSettings());
+            KeyConfig config = new KeyConfig();
+            config.Reset();
 
             using (var rsaEncryptor = new RSACryptoServiceProvider())
             using (var rsaDecryptor = new RSACryptoServiceProvider())
