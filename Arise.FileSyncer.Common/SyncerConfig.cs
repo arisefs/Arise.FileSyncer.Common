@@ -8,6 +8,13 @@ namespace Arise.FileSyncer.Common
 {
     public class SyncerConfig
     {
+        public class ConfigStorage
+        {
+            public SyncerPeerSettings PeerSettings;
+            public AddressFamily ListenerAddressFamily;
+            public int DiscoveryPort;
+        }
+
         public SyncerPeerSettings PeerSettings
         {
             get => config.PeerSettings;
@@ -41,7 +48,7 @@ namespace Arise.FileSyncer.Common
         /// <summary>
         /// Saves the config to the disk
         /// </summary>
-        public bool SaveConfig()
+        public bool Save()
         {
             return SaveManager.Save(config, configPath);
         }
@@ -49,7 +56,7 @@ namespace Arise.FileSyncer.Common
         /// <summary>
         /// Loads the config from the disk
         /// </summary>
-        public LoadResult LoadConfig(Func<SyncerPeerSettings> createPeerSettings)
+        public LoadResult Load(Func<SyncerPeerSettings> createPeerSettings)
         {
             if (SaveManager.Load(ref config, configPath))
             {
@@ -81,26 +88,15 @@ namespace Arise.FileSyncer.Common
                 return result;
             }
 
-            ResetConfig(createPeerSettings());
+            Reset(createPeerSettings());
             return LoadResult.Created;
         }
 
-        
-
-        public void ResetConfig(SyncerPeerSettings peerSettings)
+        public void Reset(SyncerPeerSettings peerSettings)
         {
             config.PeerSettings = peerSettings;
             config.ListenerAddressFamily = DefaultListenerAddressFamily;
             config.DiscoveryPort = DefaultDiscoveryPort;
-        }
-
-        
-
-        public class ConfigStorage
-        {
-            public SyncerPeerSettings PeerSettings;
-            public AddressFamily ListenerAddressFamily;
-            public int DiscoveryPort;
         }
     }
 }

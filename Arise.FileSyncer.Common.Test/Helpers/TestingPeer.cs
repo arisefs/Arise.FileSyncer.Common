@@ -19,7 +19,7 @@ namespace Arise.FileSyncer.Common.Test.Helpers
 
             Guid localId = new Guid(new byte[] { 9, 9, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, index });
             config = new SyncerConfig();
-            config.ResetConfig(new SyncerPeerSettings(localId, $"TestPeer:{index}"));
+            config.Reset(new SyncerPeerSettings(localId, $"TestPeer:{index}"));
             config.DiscoveryPort = 13965;
 
             key = new KeyConfig();
