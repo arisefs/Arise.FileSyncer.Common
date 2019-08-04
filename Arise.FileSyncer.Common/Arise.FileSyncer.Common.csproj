@@ -16,7 +16,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Arise.FileSyncer.Core" Version="1.0.78" />
+    <PackageReference Include="Arise.FileSyncer.Core" Version="1.0.0-CI-20190804-154942" />
     <PackageReference Include="fastJSON" Version="2.2.4" />
   </ItemGroup>
 
