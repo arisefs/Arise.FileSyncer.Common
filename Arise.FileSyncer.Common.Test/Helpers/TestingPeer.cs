@@ -37,7 +37,6 @@ namespace Arise.FileSyncer.Common.Test.Helpers
                 AllowReceive = index != 0,
                 Key = sharedId,
                 RootDirectory = TestingData.GetTestDirectory(index),
-                Plugin = "TestPlugin"
             });
 
             peer = new SyncerPeer(config.PeerSettings);
@@ -46,7 +45,6 @@ namespace Arise.FileSyncer.Common.Test.Helpers
 
             peer.ConnectionAdded += Peer_ConnectionAdded;
             peer.ConnectionRemoved += Peer_ConnectionRemoved;
-            peer.Plugins.Add(new TestingPlugin());
         }
 
         public void SendDiscoveryMessage()

@@ -69,7 +69,7 @@ namespace Arise.FileSyncer.Common.Test
             for (int i = 0; i < sourceFiles.Length; i++)
             {
                 // Adding .dat to end cause of plugin
-                Assert.AreEqual(sourceFiles[i].Substring(14) + ".dat", targetFiles[i].Substring(14));
+                Assert.AreEqual(sourceFiles[i].Substring(14), targetFiles[i].Substring(14));
 
                 FileInfo sourceFile = new FileInfo(sourceFiles[i]);
                 FileInfo targetFile = new FileInfo(targetFiles[i]);
