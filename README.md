@@ -1,2 +1,2 @@
 # Arise.FileSyncer.Common
-[![Build Status](https://dev.azure.com/AriseFS/GitHub-CI/_apis/build/status/Arise.FileSyncer.Common?branchName=master)](https://dev.azure.com/AriseFS/GitHub-CI/_build/latest?definitionId=3&branchName=master)
+Glue for the FileSyncer Core
