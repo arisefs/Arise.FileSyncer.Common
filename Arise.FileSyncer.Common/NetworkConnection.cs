@@ -4,7 +4,7 @@ using System.Net.Sockets;
 using System.Security.Cryptography;
 using Arise.FileSyncer.Common.Security;
 using Arise.FileSyncer.Core;
-using Arise.FileSyncer.Core.Serializer;
+using Arise.FileSyncer.Serializer;
 
 namespace Arise.FileSyncer.Common
 {
@@ -34,8 +34,8 @@ namespace Arise.FileSyncer.Common
                         rsa.ImportParameters(keyInfo.GetParameters());
 
                         // Send public key
-                        stream.Write(keyInfo.Modulus);
-                        stream.Write(keyInfo.Exponent);
+                        stream.WriteAFS(keyInfo.Modulus);
+                        stream.WriteAFS(keyInfo.Exponent);
                         stream.Flush();
 
                         // Receive and flip seeds
@@ -65,8 +65,8 @@ namespace Arise.FileSyncer.Common
                         rsa.ImportParameters(rsaKeyInfo);
 
                         // Encrypt and write seeds
-                        stream.Write(rsa.Encrypt(BitConverter.GetBytes(readSeed), true));
-                        stream.Write(rsa.Encrypt(BitConverter.GetBytes(writeSeed), true));
+                        stream.WriteAFS(rsa.Encrypt(BitConverter.GetBytes(readSeed), true));
+                        stream.WriteAFS(rsa.Encrypt(BitConverter.GetBytes(writeSeed), true));
                         stream.Flush();
                     }
 
@@ -77,7 +77,7 @@ namespace Arise.FileSyncer.Common
             catch (Exception ex)
             {
                 Log.Debug($"{this}: Connection encryption initialization failed! Ex.:{ex.Message}");
-                throw ex;
+                throw;
             }
         }
 

@@ -1,10 +1,10 @@
-﻿using System.Net;
+using System.Net;
 using System.Net.NetworkInformation;
 using System.Net.Sockets;
 
 namespace Arise.FileSyncer.Common.Helpers
 {
-    internal static class NetworkHelper
+    public static class NetworkHelper
     {
         /// <summary>
         /// Gets first active LAN IP address.
@@ -12,6 +12,28 @@ namespace Arise.FileSyncer.Common.Helpers
         /// <param name="addressFamily">Address family to search for</param>
         /// <returns>LAN IP address</returns>
         public static IPAddress GetLocalIPAddress(AddressFamily addressFamily)
+        {
+            return GetIPWithHostDNS(addressFamily);
+        }
+
+        private static IPAddress GetIPWithHostDNS(AddressFamily addressFamily)
+        {
+            IPAddress selectedAddress = IPAddress.Any;
+            IPHostEntry hostEntry = Dns.GetHostEntry(Dns.GetHostName());
+
+            foreach (var ip in hostEntry.AddressList)
+            {
+                if (ip.AddressFamily == addressFamily && ip.IsInternal())
+                {
+                    selectedAddress = ip;
+                    break;
+                }
+            }
+
+            return selectedAddress;
+        }
+
+        private static IPAddress GetIPWithNetworkInterfaces(AddressFamily addressFamily)
         {
             IPAddress selectedAddress = IPAddress.Any;
 

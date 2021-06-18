@@ -5,7 +5,7 @@ using System.Threading.Tasks;
 using Arise.FileSyncer.Common.Helpers;
 using Arise.FileSyncer.Common.Security;
 using Arise.FileSyncer.Core;
-using Arise.FileSyncer.Core.Serializer;
+using Arise.FileSyncer.Serializer;
 
 namespace Arise.FileSyncer.Common
 {
@@ -91,7 +91,7 @@ namespace Arise.FileSyncer.Common
                     throw new Exception("Failed to connect. Timeout.");
                 }
 
-                client.GetStream().Write(syncerConfig.PeerSettings.DeviceId);
+                client.GetStream().WriteAFS(syncerConfig.PeerSettings.DeviceId);
                 AddClientToSyncer(id, client, null);
             }
             catch (Exception ex)

@@ -4,7 +4,7 @@ using System.Net;
 using System.Net.Sockets;
 using System.Threading.Tasks;
 using Arise.FileSyncer.Core;
-using Arise.FileSyncer.Core.Serializer;
+using Arise.FileSyncer.Serializer;
 
 namespace Arise.FileSyncer.Common
 {
@@ -23,7 +23,7 @@ namespace Arise.FileSyncer.Common
         private volatile bool isActive = false;
         private Task task = null;
 
-        private const long NetVersion = 2;
+        public const long NetVersion = 2;
 
         public NetworkDiscovery(SyncerConfig syncerConfig, SyncerPeer syncerPeer, NetworkListener listener)
         {
@@ -32,7 +32,7 @@ namespace Arise.FileSyncer.Common
             this.listener = listener;
 
             UpdateEndPoints();
-            UpdateMessage();
+            message = UpdateMessage();
             CreateSocket();
 
             task = Task.Factory.StartNew(DiscoveryListener, TaskCreationOptions.LongRunning);
@@ -158,18 +158,18 @@ namespace Arise.FileSyncer.Common
             receiveEndPoint = new IPEndPoint(IPAddress.Any, syncerConfig.DiscoveryPort);
         }
 
-        private void UpdateMessage()
+        public byte[] UpdateMessage()
         {
             using (MemoryStream writeStream = new MemoryStream())
             {
                 // netVersion has to be the first written data
-                writeStream.Write(NetVersion);
+                writeStream.WriteAFS(NetVersion);
 
-                writeStream.Write(syncerConfig.PeerSettings.DeviceId);
-                writeStream.Write(listener.LocalEndpoint.Address.GetAddressBytes());
-                writeStream.Write(listener.LocalEndpoint.Port);
+                writeStream.WriteAFS(syncerConfig.PeerSettings.DeviceId);
+                writeStream.WriteAFS(listener.LocalEndpoint.Address.GetAddressBytes());
+                writeStream.WriteAFS(listener.LocalEndpoint.Port);
 
-                message = writeStream.ToArray();
+                return writeStream.ToArray();
             }
         }
 
