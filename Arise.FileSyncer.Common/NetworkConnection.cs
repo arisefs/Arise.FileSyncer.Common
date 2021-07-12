@@ -82,7 +82,7 @@ namespace Arise.FileSyncer.Common
         }
 
         #region IDisposable Support
-        private bool disposedValue = false;
+        private bool disposedValue;
 
         protected virtual void Dispose(bool disposing)
         {
@@ -90,6 +90,7 @@ namespace Arise.FileSyncer.Common
             {
                 if (disposing)
                 {
+                    // Dispose managed state (managed objects)
                     encryptedStream.Dispose();
                     tcpClient.Dispose();
                 }
@@ -100,7 +101,9 @@ namespace Arise.FileSyncer.Common
 
         public void Dispose()
         {
-            Dispose(true);
+            // Do not change this code. Put cleanup code in 'Dispose(bool disposing)' method
+            Dispose(disposing: true);
+            GC.SuppressFinalize(this);
         }
         #endregion
     }
