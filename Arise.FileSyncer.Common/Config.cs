@@ -1,15 +1,15 @@
 using System;
-using System.Collections.Generic;
 using System.IO;
-using System.Text;
-using Arise.FileSyncer.Core;
 
 namespace Arise.FileSyncer.Common
 {
     public static class Config
     {
         public delegate string DelegateGetConfigFolderPath();
+
+#pragma warning disable CA2211 // Non-constant fields should not be visible
         public static DelegateGetConfigFolderPath GetConfigFolderPath = DefaultGetConfigFolderPath;
+#pragma warning restore CA2211 // Non-constant fields should not be visible
 
         public static string GetConfigFilePath(string name)
         {

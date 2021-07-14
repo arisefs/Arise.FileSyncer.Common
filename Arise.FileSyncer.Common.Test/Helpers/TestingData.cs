@@ -1,6 +1,5 @@
 using System;
 using System.IO;
-using Arise.FileSyncer.Core;
 using Arise.FileSyncer.Core.Helpers;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
@@ -46,7 +45,7 @@ namespace Arise.FileSyncer.Common.Test.Helpers
         {
             try
             {
-                DirectoryInfo info = new DirectoryInfo(GetTestDirectoryName(index));
+                DirectoryInfo info = new(GetTestDirectoryName(index));
                 return PathHelper.GetCorrect(info.FullName, true);
             }
             catch (Exception)
@@ -104,12 +103,10 @@ namespace Arise.FileSyncer.Common.Test.Helpers
                 string filePath = Path.Combine(path, $"Sub File {i}.txt");
                 if (!File.Exists(filePath))
                 {
-                    using (StreamWriter writer = File.CreateText(filePath))
+                    using StreamWriter writer = File.CreateText(filePath);
+                    for (int j = 0; j < 50 + i; j++)
                     {
-                        for (int j = 0; j < 50 + i; j++)
-                        {
-                            writer.Write("Some data");
-                        }
+                        writer.Write("Some data");
                     }
                 }
             }

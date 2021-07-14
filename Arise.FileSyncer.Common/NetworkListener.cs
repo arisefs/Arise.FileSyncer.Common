@@ -82,7 +82,7 @@ namespace Arise.FileSyncer.Common
 
         public void Connect(Guid id, IPAddress address, int port)
         {
-            TcpClient client = new TcpClient();
+            TcpClient client = new();
 
             try
             {
@@ -105,7 +105,7 @@ namespace Arise.FileSyncer.Common
 
         private void AddClientToSyncer(Guid remoteDeviceId, TcpClient client, KeyInfo keyInfo)
         {
-            NetworkConnection connection = new NetworkConnection(client, remoteDeviceId, keyInfo);
+            NetworkConnection connection = new(client, remoteDeviceId, keyInfo);
 
             try
             {
@@ -139,6 +139,7 @@ namespace Arise.FileSyncer.Common
         public void Dispose()
         {
             Dispose(true);
+            GC.SuppressFinalize(this);
         }
         #endregion
     }

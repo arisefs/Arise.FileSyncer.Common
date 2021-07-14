@@ -112,7 +112,7 @@ namespace Arise.FileSyncer.Common.Security
         public int Next(int lowerBound, int upperBound)
         {
             if (lowerBound > upperBound)
-                throw new ArgumentOutOfRangeException("upperBound", upperBound, "upperBound must be >=lowerBound");
+                throw new ArgumentOutOfRangeException(nameof(upperBound), upperBound, "upperBound must be >=lowerBound");
 
             uint t = (x ^ (x << 11));
             x = y; y = z; z = w;

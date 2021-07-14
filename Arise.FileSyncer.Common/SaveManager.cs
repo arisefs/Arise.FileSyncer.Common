@@ -4,7 +4,7 @@ namespace Arise.FileSyncer.Common
 {
     public static class SaveManager
     {
-        private static readonly object saveLock = new object();
+        private static readonly object saveLock = new();
 
         /// <summary>
         /// Loads the file as Json into a specified object
@@ -56,7 +56,7 @@ namespace Arise.FileSyncer.Common
 
                 lock (saveLock)
                 {
-                    using (StreamWriter writer = new StreamWriter(tempPath, false))
+                    using (var writer = new StreamWriter(tempPath, false))
                     {
                         writer.Write(json);
                     }

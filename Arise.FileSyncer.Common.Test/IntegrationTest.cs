@@ -1,7 +1,6 @@
 using System.IO;
 using System.Threading;
 using Arise.FileSyncer.Common.Test.Helpers;
-using Arise.FileSyncer.Core;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Arise.FileSyncer.Common.Test
@@ -54,7 +53,7 @@ namespace Arise.FileSyncer.Common.Test
 
             for (int i = 0; i < sourceDirectories.Length; i++)
             {
-                Assert.AreEqual(sourceDirectories[i].Substring(14), targetDirectories[i].Substring(14));
+                Assert.AreEqual(sourceDirectories[i][14..], targetDirectories[i][14..]);
             }
         }
 
@@ -69,10 +68,10 @@ namespace Arise.FileSyncer.Common.Test
             for (int i = 0; i < sourceFiles.Length; i++)
             {
                 // Adding .dat to end cause of plugin
-                Assert.AreEqual(sourceFiles[i].Substring(14), targetFiles[i].Substring(14));
+                Assert.AreEqual(sourceFiles[i][14..], targetFiles[i][14..]);
 
-                FileInfo sourceFile = new FileInfo(sourceFiles[i]);
-                FileInfo targetFile = new FileInfo(targetFiles[i]);
+                FileInfo sourceFile = new(sourceFiles[i]);
+                FileInfo targetFile = new(targetFiles[i]);
 
                 sourceFile.Refresh();
                 targetFile.Refresh();

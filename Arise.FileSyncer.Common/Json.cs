@@ -1,10 +1,10 @@
-﻿using fastJSON;
+using fastJSON;
 
 namespace Arise.FileSyncer.Common
 {
     public static class Json
     {
-        private static readonly JSONParameters settings = new JSONParameters()
+        private static readonly JSONParameters settings = new()
         {
             SerializeNullValues = false,
             EnableAnonymousTypes = true,

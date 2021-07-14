@@ -29,22 +29,20 @@ namespace Arise.FileSyncer.Common
                 // If we have a keyinfo then we are the initiator
                 if (keyInfo != null)
                 {
-                    using (var rsa = new RSACryptoServiceProvider())
-                    {
-                        rsa.ImportParameters(keyInfo.GetParameters());
+                    using var rsa = new RSACryptoServiceProvider();
+                    rsa.ImportParameters(keyInfo.GetParameters());
 
-                        // Send public key
-                        stream.WriteAFS(keyInfo.Modulus);
-                        stream.WriteAFS(keyInfo.Exponent);
-                        stream.Flush();
+                    // Send public key
+                    stream.WriteAFS(keyInfo.Modulus);
+                    stream.WriteAFS(keyInfo.Exponent);
+                    stream.Flush();
 
-                        // Receive and flip seeds
-                        int writeSeed = BitConverter.ToInt32(rsa.Decrypt(stream.ReadByteArray(), true), 0);
-                        int readSeed = BitConverter.ToInt32(rsa.Decrypt(stream.ReadByteArray(), true), 0);
+                    // Receive and flip seeds
+                    int writeSeed = BitConverter.ToInt32(rsa.Decrypt(stream.ReadByteArray(), true), 0);
+                    int readSeed = BitConverter.ToInt32(rsa.Decrypt(stream.ReadByteArray(), true), 0);
 
-                        // Create encrypted stream
-                        encryptedStream = new EncryptedStream(stream, readSeed, writeSeed);
-                    }
+                    // Create encrypted stream
+                    encryptedStream = new EncryptedStream(stream, readSeed, writeSeed);
                 }
                 else
                 {
@@ -54,7 +52,7 @@ namespace Arise.FileSyncer.Common
                     int writeSeed = random.NextInt();
 
                     // Receive public key
-                    RSAParameters rsaKeyInfo = new RSAParameters
+                    RSAParameters rsaKeyInfo = new()
                     {
                         Modulus = stream.ReadByteArray(),
                         Exponent = stream.ReadByteArray()

@@ -17,7 +17,7 @@ namespace Arise.FileSyncer.Common.Test.Helpers
         {
             TestingData.CreateTestDirectory(index);
 
-            Guid localId = new Guid(new byte[] { 9, 9, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, index });
+            Guid localId = new(new byte[] { 9, 9, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, index });
             config = new SyncerConfig();
             config.Reset(new SyncerPeerSettings(localId, $"TestPeer:{index}"));
             config.DiscoveryPort = 13965;
@@ -26,7 +26,7 @@ namespace Arise.FileSyncer.Common.Test.Helpers
             key.Reset();
 
             int remoteIndex = (index == 0) ? 1 : 0;
-            Guid remoteId = new Guid(new byte[] { 9, 9, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, (byte)remoteIndex });
+            Guid remoteId = new(new byte[] { 9, 9, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, (byte)remoteIndex });
             Guid remoteKey = sharedId;
             config.PeerSettings.DeviceKeys.TryAdd(remoteId, remoteKey);
 

@@ -1,7 +1,5 @@
 using System;
-using System.IO;
 using System.Net.Sockets;
-using Arise.FileSyncer.Common.Security;
 using Arise.FileSyncer.Core;
 
 namespace Arise.FileSyncer.Common

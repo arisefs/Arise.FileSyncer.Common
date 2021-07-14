@@ -19,7 +19,7 @@ namespace Arise.FileSyncer.Common
         private Socket discoverySocket;
         private IPEndPoint sendEndPoint;
         private IPEndPoint receiveEndPoint;
-        private byte[] message;
+        private readonly byte[] message;
         private volatile bool isActive = false;
         private Task task = null;
 
@@ -90,35 +90,33 @@ namespace Arise.FileSyncer.Common
                         continue;
                     }
 
-                    using (MemoryStream readStream = new MemoryStream(buffer, false))
+                    using var readStream = new MemoryStream(buffer, false);
+                    // Check netVersion
+                    long remoteNetVersion = readStream.ReadInt64();
+                    if (remoteNetVersion != NetVersion) continue;
+
+                    // Check DeviceId
+                    Guid remoteDeviceId = readStream.ReadGuid();
+                    if (remoteDeviceId == syncerConfig.PeerSettings.DeviceId) continue;
+
+                    if (syncerPeer.DoesConnectionExist(remoteDeviceId)) continue;
+
+                    // Don't connect if not paired and not pairing
+                    if (!syncerPeer.AllowPairing)
                     {
-                        // Check netVersion
-                        long remoteNetVersion = readStream.ReadInt64();
-                        if (remoteNetVersion != NetVersion) continue;
-
-                        // Check DeviceId
-                        Guid remoteDeviceId = readStream.ReadGuid();
-                        if (remoteDeviceId == syncerConfig.PeerSettings.DeviceId) continue;
-
-                        if (syncerPeer.DoesConnectionExist(remoteDeviceId)) continue;
-
-                        // Don't connect if not paired and not pairing
-                        if (!syncerPeer.AllowPairing)
+                        if (!syncerPeer.Settings.DeviceKeys.ContainsKey(remoteDeviceId))
                         {
-                            if (!syncerPeer.Settings.DeviceKeys.ContainsKey(remoteDeviceId))
-                            {
-                                continue;
-                            }
+                            continue;
                         }
-
-                        // Get listener address
-                        var listenerIP = new IPAddress(readStream.ReadByteArray());
-                        int listenerPort = readStream.ReadInt32();
-
-                        // Connect to target
-                        Log.Info($"{this}: Found discovery target!");
-                        listener.Connect(remoteDeviceId, listenerIP, listenerPort);
                     }
+
+                    // Get listener address
+                    var listenerIP = new IPAddress(readStream.ReadByteArray());
+                    int listenerPort = readStream.ReadInt32();
+
+                    // Connect to target
+                    Log.Info($"{this}: Found discovery target!");
+                    listener.Connect(remoteDeviceId, listenerIP, listenerPort);
                 }
             }
             catch (Exception ex)
@@ -160,17 +158,15 @@ namespace Arise.FileSyncer.Common
 
         public byte[] UpdateMessage()
         {
-            using (MemoryStream writeStream = new MemoryStream())
-            {
-                // netVersion has to be the first written data
-                writeStream.WriteAFS(NetVersion);
+            using var writeStream = new MemoryStream();
+            // netVersion has to be the first written data
+            writeStream.WriteAFS(NetVersion);
 
-                writeStream.WriteAFS(syncerConfig.PeerSettings.DeviceId);
-                writeStream.WriteAFS(listener.LocalEndpoint.Address.GetAddressBytes());
-                writeStream.WriteAFS(listener.LocalEndpoint.Port);
+            writeStream.WriteAFS(syncerConfig.PeerSettings.DeviceId);
+            writeStream.WriteAFS(listener.LocalEndpoint.Address.GetAddressBytes());
+            writeStream.WriteAFS(listener.LocalEndpoint.Port);
 
-                return writeStream.ToArray();
-            }
+            return writeStream.ToArray();
         }
 
         #region IDisposable Support
@@ -196,6 +192,7 @@ namespace Arise.FileSyncer.Common
         public void Dispose()
         {
             Dispose(true);
+            GC.SuppressFinalize(this);
         }
         #endregion
     }

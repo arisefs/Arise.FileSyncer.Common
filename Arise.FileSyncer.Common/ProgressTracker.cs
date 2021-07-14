@@ -58,7 +58,7 @@ namespace Arise.FileSyncer.Common
 
         public ProgressUpdateEventArgs()
         {
-            Progresses = new ProgressStatus[0];
+            Progresses = Array.Empty<ProgressStatus>();
         }
 
         public ProgressUpdateEventArgs(ICollection<ProgressStatus> progresses)
@@ -159,6 +159,7 @@ namespace Arise.FileSyncer.Common
         public void Dispose()
         {
             Dispose(true);
+            GC.SuppressFinalize(this);
         }
         #endregion
 

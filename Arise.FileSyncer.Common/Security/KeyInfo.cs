@@ -56,22 +56,20 @@ namespace Arise.FileSyncer.Common.Security
         /// <returns>Key</returns>
         public static KeyInfo Generate(int keySize)
         {
-            using (var rsa = new RSACryptoServiceProvider(keySize))
-            {
-                RSAParameters rsaKeyInfo = rsa.ExportParameters(true);
+            using var rsa = new RSACryptoServiceProvider(keySize);
+            RSAParameters rsaKeyInfo = rsa.ExportParameters(true);
 
-                return new KeyInfo()
-                {
-                    Modulus = rsaKeyInfo.Modulus,
-                    Exponent = rsaKeyInfo.Exponent,
-                    D = rsaKeyInfo.D,
-                    DP = rsaKeyInfo.DP,
-                    DQ = rsaKeyInfo.DQ,
-                    InverseQ = rsaKeyInfo.InverseQ,
-                    P = rsaKeyInfo.P,
-                    Q = rsaKeyInfo.Q,
-                };
-            }
+            return new KeyInfo()
+            {
+                Modulus = rsaKeyInfo.Modulus,
+                Exponent = rsaKeyInfo.Exponent,
+                D = rsaKeyInfo.D,
+                DP = rsaKeyInfo.DP,
+                DQ = rsaKeyInfo.DQ,
+                InverseQ = rsaKeyInfo.InverseQ,
+                P = rsaKeyInfo.P,
+                Q = rsaKeyInfo.Q,
+            };
         }
     }
 }

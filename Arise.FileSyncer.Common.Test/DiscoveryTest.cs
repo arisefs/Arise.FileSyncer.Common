@@ -1,9 +1,5 @@
 using System;
-using System.Collections.Generic;
 using System.IO;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using Arise.FileSyncer.Common.Test.Helpers;
 using Arise.FileSyncer.Serializer;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -26,10 +22,8 @@ namespace Arise.FileSyncer.Common.Test
         {
             var peerS = new TestingPeer(0);
             var message = peerS.discovery.UpdateMessage();
-            using (var stream = new MemoryStream(message, false))
-            {
-                Assert.AreEqual(NetworkDiscovery.NetVersion, stream.ReadInt64());
-            }
+            using var stream = new MemoryStream(message, false);
+            Assert.AreEqual(NetworkDiscovery.NetVersion, stream.ReadInt64());
         }
     }
 }
