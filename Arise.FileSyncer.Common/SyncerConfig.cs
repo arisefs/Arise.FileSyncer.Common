@@ -49,6 +49,14 @@ namespace Arise.FileSyncer.Common
         }
 
         /// <summary>
+        /// Saves the config to the disk
+        /// </summary>
+        public bool Save(ConfigStorage config)
+        {
+            return SaveFileUtility.Save(configPath, config);
+        }
+
+        /// <summary>
         /// Loads the config from the disk
         /// </summary>
         public LoadResult Load(SyncerPeerSettings refSettings, out ConfigStorage config)
