@@ -14,19 +14,19 @@ namespace Arise.FileSyncer.Common
         public bool IsActive => isActive;
         public IPEndPoint LocalEndpoint => tcpListener?.LocalEndpoint as IPEndPoint;
 
-        private readonly SyncerConfig syncerConfig;
+        private readonly SyncerPeer syncerPeer;
         private readonly KeyConfig keyConfig;
         private readonly Func<INetConnection, bool> addConnection;
         private readonly TcpListener tcpListener;
         private volatile bool isActive = false;
 
-        public NetworkListener(SyncerConfig syncerConfig, KeyConfig keyConfig, Func<INetConnection, bool> addConnection)
+        public NetworkListener(SyncerPeer syncerPeer, KeyConfig keyConfig, AddressFamily addressFamily, Func<INetConnection, bool> addConnection)
         {
-            this.syncerConfig = syncerConfig;
+            this.syncerPeer = syncerPeer;
             this.keyConfig = keyConfig;
             this.addConnection = addConnection;
 
-            var address = NetworkHelper.GetLocalIPAddress(syncerConfig.ListenerAddressFamily);
+            var address = NetworkHelper.GetLocalIPAddress(addressFamily);
 
             try
             {
@@ -91,7 +91,7 @@ namespace Arise.FileSyncer.Common
                     throw new Exception("Failed to connect. Timeout.");
                 }
 
-                client.GetStream().WriteAFS(syncerConfig.PeerSettings.DeviceId);
+                client.GetStream().WriteAFS(syncerPeer.Settings.DeviceId);
                 AddClientToSyncer(id, client, null);
             }
             catch (Exception ex)
