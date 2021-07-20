@@ -2,7 +2,7 @@ using System.IO;
 
 namespace Arise.FileSyncer.Common
 {
-    public static class SaveManager
+    public static class SaveFileUtility
     {
         private static readonly object saveLock = new();
 
@@ -13,10 +13,8 @@ namespace Arise.FileSyncer.Common
         /// <param name="obj">Object to load the data into</param>
         /// <param name="path">Path to the file</param>
         /// <returns>Does succeeded</returns>
-        public static bool Load<T>(ref T obj, string path) where T : class
+        public static bool Load<T>(string path, ref T obj) where T : class
         {
-            T loadedObj;
-
             try
             {
                 string json = null;
@@ -26,13 +24,9 @@ namespace Arise.FileSyncer.Common
                     json = File.ReadAllText(path);
                 }
 
-                loadedObj = Json.Deserialize<T>(json);
+                obj = Json.Deserialize<T>(json);
             }
             catch { return false; }
-
-            if (loadedObj == null) return false;
-
-            obj = loadedObj;
 
             return true;
         }
@@ -44,10 +38,8 @@ namespace Arise.FileSyncer.Common
         /// <param name="obj">Object to save</param>
         /// <param name="path">Path to the file</param>
         /// <returns>Does succeeded</returns>
-        public static bool Save<T>(T obj, string path) where T : class
+        public static bool Save<T>(string path, T obj) where T : class
         {
-            if (obj == null) return false;
-
             string json = Json.Serialize(obj);
 
             try

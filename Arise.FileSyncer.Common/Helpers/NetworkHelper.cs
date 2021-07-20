@@ -13,7 +13,9 @@ namespace Arise.FileSyncer.Common.Helpers
         /// <returns>LAN IP address</returns>
         public static IPAddress GetLocalIPAddress(AddressFamily addressFamily)
         {
-            return GetIPWithHostDNS(addressFamily);
+            IPAddress ip = GetIPWithHostDNS(addressFamily);
+            if (ip == IPAddress.Any) ip = GetIPWithNetworkInterfaces(addressFamily);
+            return ip;
         }
 
         private static IPAddress GetIPWithHostDNS(AddressFamily addressFamily)

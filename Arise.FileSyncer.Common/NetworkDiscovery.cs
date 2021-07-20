@@ -23,7 +23,7 @@ namespace Arise.FileSyncer.Common
         private volatile bool isActive = false;
         private Task task = null;
 
-        public const long NetVersion = 2;
+        public const long NetVersion = 3;
 
         public NetworkDiscovery(SyncerConfig syncerConfig, SyncerPeer syncerPeer, NetworkListener listener)
         {
@@ -31,8 +31,8 @@ namespace Arise.FileSyncer.Common
             this.syncerPeer = syncerPeer;
             this.listener = listener;
 
+            message = CreateDiscoveryMessage();
             UpdateEndPoints();
-            message = UpdateMessage();
             CreateSocket();
 
             task = Task.Factory.StartNew(DiscoveryListener, TaskCreationOptions.LongRunning);
@@ -93,18 +93,22 @@ namespace Arise.FileSyncer.Common
                     using var readStream = new MemoryStream(buffer, false);
                     // Check netVersion
                     long remoteNetVersion = readStream.ReadInt64();
-                    if (remoteNetVersion != NetVersion) continue;
+                    if (remoteNetVersion != NetVersion)
+                    {
+                        Log.Verbose($"{this}: Discovery target has different NetVersion");
+                        continue;
+                    }
 
                     // Check DeviceId
                     Guid remoteDeviceId = readStream.ReadGuid();
-                    if (remoteDeviceId == syncerConfig.PeerSettings.DeviceId) continue;
+                    if (remoteDeviceId == syncerPeer.Settings.DeviceId) continue;
 
-                    if (syncerPeer.DoesConnectionExist(remoteDeviceId)) continue;
+                    if (syncerPeer.Connections.DoesConnectionExist(remoteDeviceId)) continue;
 
                     // Don't connect if not paired and not pairing
                     if (!syncerPeer.AllowPairing)
                     {
-                        if (!syncerPeer.Settings.DeviceKeys.ContainsKey(remoteDeviceId))
+                        if (!syncerPeer.DeviceKeys.ContainsId(remoteDeviceId))
                         {
                             continue;
                         }
@@ -115,7 +119,7 @@ namespace Arise.FileSyncer.Common
                     int listenerPort = readStream.ReadInt32();
 
                     // Connect to target
-                    Log.Info($"{this}: Found discovery target!");
+                    Log.Info($"{this}: Found discovery target! Connecting...");
                     listener.Connect(remoteDeviceId, listenerIP, listenerPort);
                 }
             }
@@ -129,10 +133,7 @@ namespace Arise.FileSyncer.Common
 
         private void CreateSocket()
         {
-            if (discoverySocket != null)
-            {
-                discoverySocket.Dispose();
-            }
+            if (discoverySocket != null) discoverySocket.Dispose();
 
             try
             {
@@ -156,13 +157,13 @@ namespace Arise.FileSyncer.Common
             receiveEndPoint = new IPEndPoint(IPAddress.Any, syncerConfig.DiscoveryPort);
         }
 
-        public byte[] UpdateMessage()
+        public byte[] CreateDiscoveryMessage()
         {
             using var writeStream = new MemoryStream();
             // netVersion has to be the first written data
             writeStream.WriteAFS(NetVersion);
 
-            writeStream.WriteAFS(syncerConfig.PeerSettings.DeviceId);
+            writeStream.WriteAFS(syncerPeer.Settings.DeviceId);
             writeStream.WriteAFS(listener.LocalEndpoint.Address.GetAddressBytes());
             writeStream.WriteAFS(listener.LocalEndpoint.Port);
 

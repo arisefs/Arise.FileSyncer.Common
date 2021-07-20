@@ -25,7 +25,7 @@ namespace Arise.FileSyncer.Common
         /// </summary>
         public bool Save()
         {
-            return SaveManager.Save(keyInfo, keyPath);
+            return SaveFileUtility.Save(keyPath, keyInfo);
         }
 
         /// <summary>
@@ -34,7 +34,7 @@ namespace Arise.FileSyncer.Common
         /// <returns>Did it upgrade/create the key</returns>
         public LoadResult Load()
         {
-            if (SaveManager.Load(ref keyInfo, keyPath))
+            if (SaveFileUtility.Load(keyPath, ref keyInfo))
             {
                 LoadResult result = LoadResult.Loaded;
 

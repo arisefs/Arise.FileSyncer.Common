@@ -1,10 +1,12 @@
 using System;
 using Arise.FileSyncer.Core;
+using Arise.FileSyncer.Core.Peer;
 
 namespace Arise.FileSyncer.Common.Test.Helpers
 {
     internal class TestingPeer : IDisposable
     {
+        private const bool SupportTimestamp = true;
         private static readonly Guid sharedId = Guid.NewGuid();
 
         public readonly NetworkDiscovery discovery;
@@ -15,22 +17,24 @@ namespace Arise.FileSyncer.Common.Test.Helpers
 
         public TestingPeer(byte index)
         {
-            TestingData.CreateTestDirectory(index);
-
-            Guid localId = new(new byte[] { 9, 9, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, index });
-            config = new SyncerConfig();
-            config.Reset(new SyncerPeerSettings(localId, $"TestPeer:{index}"));
-            config.DiscoveryPort = 13965;
+            config = new SyncerConfig { DiscoveryPort = 13965 };
 
             key = new KeyConfig();
             key.Reset();
 
+            TestingData.CreateTestDirectory(index);
+
+            Guid localId = new(new byte[] { 9, 9, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, index });
+            SyncerPeerSettings settings = new(localId, $"TestPeer:{index}", SupportTimestamp);
+
             int remoteIndex = (index == 0) ? 1 : 0;
             Guid remoteId = new(new byte[] { 9, 9, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, (byte)remoteIndex });
             Guid remoteKey = sharedId;
-            config.PeerSettings.DeviceKeys.TryAdd(remoteId, remoteKey);
+            DeviceKeyManager deviceKeys = new();
+            deviceKeys.Add(remoteId, remoteKey);
 
-            config.PeerSettings.Profiles.TryAdd(sharedId, new SyncProfile.Creator()
+            ProfileManager profiles = new();
+            profiles.AddProfile(sharedId, new SyncProfile()
             {
                 Activated = true,
                 AllowSend = index == 0,
@@ -39,12 +43,12 @@ namespace Arise.FileSyncer.Common.Test.Helpers
                 RootDirectory = TestingData.GetTestDirectory(index),
             });
 
-            peer = new SyncerPeer(config.PeerSettings);
-            listener = new NetworkListener(config, key, peer.AddConnection);
+            peer = new SyncerPeer(settings, deviceKeys, profiles);
+            listener = new NetworkListener(peer, key, config.ListenerAddressFamily, peer.AddConnection);
             discovery = new NetworkDiscovery(config, peer, listener);
 
-            peer.ConnectionAdded += Peer_ConnectionAdded;
-            peer.ConnectionRemoved += Peer_ConnectionRemoved;
+            peer.Connections.ConnectionAdded += Peer_ConnectionAdded;
+            peer.Connections.ConnectionRemoved += Peer_ConnectionRemoved;
         }
 
         public void SendDiscoveryMessage()
@@ -52,12 +56,12 @@ namespace Arise.FileSyncer.Common.Test.Helpers
             discovery.SendDiscoveryMessage();
         }
 
-        private void Peer_ConnectionAdded(object sender, ConnectionAddedEventArgs e)
+        private void Peer_ConnectionAdded(object sender, ConnectionEventArgs e)
         {
             Log.Info("Connection Added!");
         }
 
-        private void Peer_ConnectionRemoved(object sender, ConnectionRemovedEventArgs e)
+        private void Peer_ConnectionRemoved(object sender, ConnectionEventArgs e)
         {
             Log.Info("Connection Removed!");
         }
@@ -83,6 +87,7 @@ namespace Arise.FileSyncer.Common.Test.Helpers
         public void Dispose()
         {
             Dispose(true);
+            GC.SuppressFinalize(this);
         }
         #endregion
     }

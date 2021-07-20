@@ -13,7 +13,7 @@ namespace Arise.FileSyncer.Common.Test
         public void MessageTest()
         {
             var peerS = new TestingPeer(0);
-            var message = peerS.discovery.UpdateMessage();
+            var message = peerS.discovery.CreateDiscoveryMessage();
             Assert.AreEqual(NetworkDiscovery.NetVersion, BitConverter.ToInt64(message.AsSpan()[..8]));
         }
 
@@ -21,7 +21,7 @@ namespace Arise.FileSyncer.Common.Test
         public void MessageTestRead()
         {
             var peerS = new TestingPeer(0);
-            var message = peerS.discovery.UpdateMessage();
+            var message = peerS.discovery.CreateDiscoveryMessage();
             using var stream = new MemoryStream(message, false);
             Assert.AreEqual(NetworkDiscovery.NetVersion, stream.ReadInt64());
         }

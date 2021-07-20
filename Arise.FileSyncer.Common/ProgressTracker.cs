@@ -79,14 +79,14 @@ namespace Arise.FileSyncer.Common
 
         public ProgressTracker(SyncerPeer peer, int updateInterval = 1000, int avarageNum = 10)
         {
-            this.peer = peer;
+            this.peer = peer ?? throw new ArgumentNullException(nameof(peer));
             this.avarageNum = avarageNum;
             speedInterval = updateInterval / 1000.0;
 
             progressArchive = new ConcurrentDictionary<Guid, ProgressArchive>(1, 0);
 
-            peer.ConnectionAdded += Peer_ConnectionAdded;
-            peer.ConnectionRemoved += Peer_ConnectionRemoved;
+            peer.Connections.ConnectionAdded += Peer_ConnectionAdded;
+            peer.Connections.ConnectionRemoved += Peer_ConnectionRemoved;
 
             progressTimer = new Timer(ProgressTimerCallback, null, updateInterval, updateInterval);
         }
@@ -95,7 +95,7 @@ namespace Arise.FileSyncer.Common
         {
             foreach (var archive in progressArchive)
             {
-                if (peer.TryGetConnection(archive.Key, out var connection))
+                if (peer.Connections.TryGetConnection(archive.Key, out var connection))
                 {
                     archive.Value.AddNext(connection.Progress);
                 }
@@ -118,12 +118,12 @@ namespace Arise.FileSyncer.Common
             OnProgressUpdate(progresses);
         }
 
-        private void Peer_ConnectionAdded(object sender, ConnectionAddedEventArgs e)
+        private void Peer_ConnectionAdded(object sender, ConnectionEventArgs e)
         {
             progressArchive.TryAdd(e.Id, new ProgressArchive(avarageNum));
         }
 
-        private void Peer_ConnectionRemoved(object sender, ConnectionRemovedEventArgs e)
+        private void Peer_ConnectionRemoved(object sender, ConnectionEventArgs e)
         {
             progressArchive.TryRemove(e.Id, out var _);
         }
@@ -146,10 +146,10 @@ namespace Arise.FileSyncer.Common
 
                     try
                     {
-                        peer.ConnectionAdded -= Peer_ConnectionAdded;
-                        peer.ConnectionRemoved -= Peer_ConnectionRemoved;
+                        peer.Connections.ConnectionAdded -= Peer_ConnectionAdded;
+                        peer.Connections.ConnectionRemoved -= Peer_ConnectionRemoved;
                     }
-                    catch { }
+                    catch { Log.Warning("Exception in ProgressTracker dispose"); }
                 }
 
                 disposedValue = true;

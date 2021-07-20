@@ -29,8 +29,8 @@ namespace Arise.FileSyncer.Common.Test
 
             // Wait for the sync process to finish
             waitCounter = 0;
-            while (peerS.peer.GetConnectionCount() == 0 || peerS.peer.IsSyncing()
-                || peerR.peer.GetConnectionCount() == 0 || peerR.peer.IsSyncing())
+            while (peerS.peer.Connections.GetConnectionCount() == 0 || peerS.peer.IsSyncing()
+                || peerR.peer.Connections.GetConnectionCount() == 0 || peerR.peer.IsSyncing())
             {
                 Assert.IsTrue(50 > waitCounter++);
                 // Due to threading issues(?) have to wait for some time or the test will fail
