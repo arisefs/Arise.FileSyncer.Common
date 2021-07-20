@@ -1,4 +1,5 @@
 using System.IO;
+using System.Text.Json;
 
 namespace Arise.FileSyncer.Common
 {
@@ -17,14 +18,15 @@ namespace Arise.FileSyncer.Common
         {
             try
             {
-                string json = null;
+                byte[] jsonUtf8Bytes = null;
 
                 lock (saveLock)
                 {
-                    json = File.ReadAllText(path);
+                    jsonUtf8Bytes = File.ReadAllBytes(path);
                 }
 
-                obj = Json.Deserialize<T>(json);
+                var utf8Reader = new Utf8JsonReader(jsonUtf8Bytes);
+                obj = JsonSerializer.Deserialize<T>(ref utf8Reader);
             }
             catch { return false; }
 
@@ -40,19 +42,17 @@ namespace Arise.FileSyncer.Common
         /// <returns>Does succeeded</returns>
         public static bool Save<T>(string path, T obj) where T : class
         {
-            string json = Json.Serialize(obj);
-
             try
             {
+                byte[] jsonUtf8Bytes = JsonSerializer.SerializeToUtf8Bytes(obj);
                 string tempPath = path + ".tmp";
 
                 lock (saveLock)
                 {
-                    using (var writer = new StreamWriter(tempPath, false))
-                    {
-                        writer.Write(json);
-                    }
+                    // Write the data into a temp file
+                    File.WriteAllBytes(tempPath, jsonUtf8Bytes);
 
+                    // Move the temp file to the main location
                     if (File.Exists(path)) File.Delete(path);
                     File.Move(tempPath, path);
                 }

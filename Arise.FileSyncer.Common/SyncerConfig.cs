@@ -9,11 +9,11 @@ namespace Arise.FileSyncer.Common
     {
         public class ConfigStorage
         {
-            public SyncerPeerSettings PeerSettings;
-            public KeyValuePair<Guid, Guid>[] DeviceKeys;
-            public KeyValuePair<Guid, SyncProfile>[] Profiles;
-            public AddressFamily ListenerAddressFamily;
-            public int DiscoveryPort;
+            public SyncerPeerSettings PeerSettings { get; set; }
+            public KeyValuePair<Guid, Guid>[] DeviceKeys { get; set; }
+            public KeyValuePair<Guid, SyncProfile>[] Profiles { get; set; }
+            public AddressFamily ListenerAddressFamily { get; set; }
+            public int DiscoveryPort { get; set; }
         }
 
         public AddressFamily ListenerAddressFamily { get; set; }
@@ -38,7 +38,8 @@ namespace Arise.FileSyncer.Common
         /// </summary>
         public bool Save(SyncerPeer peer)
         {
-            return SaveFileUtility.Save(configPath, new ConfigStorage {
+            return SaveFileUtility.Save(configPath, new ConfigStorage
+            {
                 PeerSettings = peer.Settings,
                 DeviceKeys = peer.DeviceKeys.Snapshot(),
                 Profiles = peer.Profiles.Snapshot(),
