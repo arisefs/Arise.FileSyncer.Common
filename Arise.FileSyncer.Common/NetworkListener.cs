@@ -16,15 +16,13 @@ namespace Arise.FileSyncer.Common
 
         private readonly SyncerPeer syncerPeer;
         private readonly KeyConfig keyConfig;
-        private readonly Func<INetConnection, bool> addConnection;
         private readonly TcpListener tcpListener;
         private volatile bool isActive = false;
 
-        public NetworkListener(SyncerPeer syncerPeer, KeyConfig keyConfig, AddressFamily addressFamily, Func<INetConnection, bool> addConnection)
+        public NetworkListener(SyncerPeer syncerPeer, KeyConfig keyConfig, AddressFamily addressFamily)
         {
             this.syncerPeer = syncerPeer;
             this.keyConfig = keyConfig;
-            this.addConnection = addConnection;
 
             var address = NetworkHelper.GetLocalIPAddress(addressFamily);
 
@@ -109,7 +107,7 @@ namespace Arise.FileSyncer.Common
 
             try
             {
-                addConnection(connection);
+                syncerPeer.AddConnection(connection);
             }
             catch (Exception ex)
             {

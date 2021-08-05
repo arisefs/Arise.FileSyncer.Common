@@ -44,7 +44,7 @@ namespace Arise.FileSyncer.Common.Test.Helpers
             });
 
             peer = new SyncerPeer(settings, deviceKeys, profiles);
-            listener = new NetworkListener(peer, key, config.ListenerAddressFamily, peer.AddConnection);
+            listener = new NetworkListener(peer, key, config.ListenerAddressFamily);
             discovery = new NetworkDiscovery(config, peer, listener);
 
             peer.Connections.ConnectionAdded += Peer_ConnectionAdded;

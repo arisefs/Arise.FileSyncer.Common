@@ -1,5 +1,4 @@
 using System.Net;
-using System.Net.NetworkInformation;
 using System.Net.Sockets;
 
 namespace Arise.FileSyncer.Common.Helpers
@@ -13,9 +12,7 @@ namespace Arise.FileSyncer.Common.Helpers
         /// <returns>LAN IP address</returns>
         public static IPAddress GetLocalIPAddress(AddressFamily addressFamily)
         {
-            IPAddress ip = GetIPWithHostDNS(addressFamily);
-            if (ip == IPAddress.Any) ip = GetIPWithNetworkInterfaces(addressFamily);
-            return ip;
+            return GetIPWithHostDNS(addressFamily);
         }
 
         private static IPAddress GetIPWithHostDNS(AddressFamily addressFamily)
@@ -29,39 +26,6 @@ namespace Arise.FileSyncer.Common.Helpers
                 {
                     selectedAddress = ip;
                     break;
-                }
-            }
-
-            return selectedAddress;
-        }
-
-        private static IPAddress GetIPWithNetworkInterfaces(AddressFamily addressFamily)
-        {
-            IPAddress selectedAddress = IPAddress.Any;
-
-            foreach (var networkInterface in NetworkInterface.GetAllNetworkInterfaces())
-            {
-                if (networkInterface.OperationalStatus == OperationalStatus.Up)
-                {
-                    bool selected = false;
-                    var ipProps = networkInterface.GetIPProperties();
-
-                    foreach (var uniAddress in ipProps.UnicastAddresses)
-                    {
-                        var ip = uniAddress.Address;
-
-                        if (ip.AddressFamily == addressFamily && ip.IsInternal())
-                        {
-                            selectedAddress = ip;
-                            selected = true;
-                            break;
-                        }
-                    }
-
-                    if (selected && ipProps.GatewayAddresses.Count > 0)
-                    {
-                        break;
-                    }
                 }
             }
 
