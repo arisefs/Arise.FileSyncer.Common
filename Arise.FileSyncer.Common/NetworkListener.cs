@@ -24,7 +24,8 @@ namespace Arise.FileSyncer.Common
             this.syncerPeer = syncerPeer;
             this.keyConfig = keyConfig;
 
-            var address = NetworkHelper.GetLocalIPAddress(addressFamily);
+            IPAddress address = NetworkHelper.GetLocalIPAddress(addressFamily);
+            Log.Verbose($"{this}: Creating listener on {address}");
 
             try
             {
@@ -35,7 +36,7 @@ namespace Arise.FileSyncer.Common
             }
             catch (Exception ex)
             {
-                Log.Error($"{this}: Failed to create the listener: {ex.Message}");
+                Log.Error($"{this}: Failed to create the listener on {address}: {ex.Message}");
                 return;
             }
         }
@@ -63,6 +64,9 @@ namespace Arise.FileSyncer.Common
                 {
                     client = tcpListener.AcceptTcpClient();
                     Guid remoteDeviceId = client.GetStream().ReadGuid();
+
+                    Log.Info($"{this}: Accepting connection...");
+
                     AddClientToSyncer(remoteDeviceId, client, keyConfig.KeyInfo);
                     client = null;
                 }
@@ -81,6 +85,7 @@ namespace Arise.FileSyncer.Common
         public void Connect(Guid id, IPAddress address, int port)
         {
             TcpClient client = new();
+            Log.Info($"{this}: Connecting to {address}:{port}...");
 
             try
             {
@@ -94,7 +99,7 @@ namespace Arise.FileSyncer.Common
             }
             catch (Exception ex)
             {
-                Log.Verbose($"{this}: Failed to connect: {ex.Message}");
+                Log.Verbose($"{this}: Failed to connect to {address}:{port} - {ex.Message}");
 
                 // Release resources on error
                 client.Dispose();
@@ -107,11 +112,14 @@ namespace Arise.FileSyncer.Common
 
             try
             {
-                syncerPeer.AddConnection(connection);
+                if (!syncerPeer.AddConnection(connection))
+                {
+                    Log.Verbose($"{this}: Connection has not been added");
+                }
             }
             catch (Exception ex)
             {
-                Log.Verbose($"{this}: Failed to add connection: {ex.Message}");
+                Log.Warning($"{this}: Failed to add connection: {ex.Message}");
 
                 // Release resources on error
                 connection?.Dispose();

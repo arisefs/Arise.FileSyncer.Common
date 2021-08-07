@@ -86,7 +86,7 @@ namespace Arise.FileSyncer.Common
 
                     if (read != buffer.Length)
                     {
-                        Log.Warning($"{this}: received incorrect amount of data");
+                        Log.Verbose($"{this}: Received incorrect amount of data. Ignoring connection...");
                         continue;
                     }
 
@@ -95,7 +95,7 @@ namespace Arise.FileSyncer.Common
                     long remoteNetVersion = readStream.ReadInt64();
                     if (remoteNetVersion != NetVersion)
                     {
-                        Log.Verbose($"{this}: Discovery target has different NetVersion");
+                        Log.Verbose($"{this}: Discovery target has different NetVersion. Ignoring connection...");
                         continue;
                     }
 
@@ -110,6 +110,7 @@ namespace Arise.FileSyncer.Common
                     {
                         if (!syncerPeer.DeviceKeys.ContainsId(remoteDeviceId))
                         {
+                            Log.Verbose($"{this}: Device is not paired and self is not pairing. Ignoring connection...");
                             continue;
                         }
                     }
@@ -125,7 +126,7 @@ namespace Arise.FileSyncer.Common
             }
             catch (Exception ex)
             {
-                Log.Verbose($"{this}: {ex.Message}");
+                Log.Verbose($"{this}: {nameof(DiscoveryListener)}: {ex.Message}");
             }
 
             isActive = false;
@@ -147,7 +148,7 @@ namespace Arise.FileSyncer.Common
             }
             catch (Exception ex)
             {
-                Log.Verbose($"{this}: {ex.Message}");
+                Log.Verbose($"{this}: {nameof(CreateSocket)}: {ex.Message}");
             }
         }
 
@@ -160,8 +161,7 @@ namespace Arise.FileSyncer.Common
         public byte[] CreateDiscoveryMessage()
         {
             using var writeStream = new MemoryStream();
-            // netVersion has to be the first written data
-            writeStream.WriteAFS(NetVersion);
+            writeStream.WriteAFS(NetVersion); // netVersion has to be the first written data
 
             writeStream.WriteAFS(syncerPeer.Settings.DeviceId);
             writeStream.WriteAFS(listener.LocalEndpoint.Address.GetAddressBytes());
@@ -179,11 +179,8 @@ namespace Arise.FileSyncer.Common
             {
                 if (disposing)
                 {
-                    if (discoverySocket != null)
-                    {
-                        discoverySocket.Dispose();
-                        discoverySocket = null;
-                    }
+                    discoverySocket?.Dispose();
+                    discoverySocket = null;
                 }
 
                 disposedValue = true;
