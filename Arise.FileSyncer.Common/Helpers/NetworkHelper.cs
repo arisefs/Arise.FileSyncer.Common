@@ -1,3 +1,4 @@
+using System;
 using System.Net;
 using System.Net.Sockets;
 
@@ -5,15 +6,14 @@ namespace Arise.FileSyncer.Common.Helpers
 {
     public static class NetworkHelper
     {
+#pragma warning disable CA2211 // Non-constant fields should not be visible
         /// <summary>
         /// Gets first active LAN IP address.
         /// </summary>
         /// <param name="addressFamily">Address family to search for</param>
         /// <returns>LAN IP address</returns>
-        public static IPAddress GetLocalIPAddress(AddressFamily addressFamily)
-        {
-            return GetIPWithHostDNS(addressFamily);
-        }
+        public static Func<AddressFamily, IPAddress> GetLocalIPAddress = GetIPWithHostDNS;
+#pragma warning restore CA2211 // Non-constant fields should not be visible
 
         private static IPAddress GetIPWithHostDNS(AddressFamily addressFamily)
         {
