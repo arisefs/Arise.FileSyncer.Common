@@ -25,7 +25,6 @@ namespace Arise.FileSyncer.Common
             this.keyConfig = keyConfig;
 
             IPAddress address = NetworkHelper.GetLocalIPAddress(addressFamily);
-            Log.Verbose($"{this}: Creating listener on {address}");
 
             try
             {
