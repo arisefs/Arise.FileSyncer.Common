@@ -71,7 +71,7 @@ namespace Arise.FileSyncer.Common
         public AddressFamily ListenerAddressFamily { get; set; }
         public int DiscoveryPort { get; set; }
 
-        private const string Filename = "config";
+        private const string Filename = "syncer";
         private const int DefaultDiscoveryPort = 13957;
         private const AddressFamily DefaultListenerAddressFamily = AddressFamily.InterNetwork;
 

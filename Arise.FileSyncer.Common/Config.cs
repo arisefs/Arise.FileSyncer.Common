@@ -14,7 +14,7 @@ namespace Arise.FileSyncer.Common
         public static string GetConfigFilePath(string name)
         {
             string configFolder = GetConfigFolderPath();
-            return Path.Combine(configFolder, name + ".json");
+            return Path.Combine(configFolder, name + ".config");
         }
 
         private static string DefaultGetConfigFolderPath()
