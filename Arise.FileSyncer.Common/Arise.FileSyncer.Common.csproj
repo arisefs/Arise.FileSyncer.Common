@@ -11,12 +11,17 @@
     <Company />
   </PropertyGroup>
 
+  <PropertyGroup>
+    <IsTrimmable>true</IsTrimmable>
+    <EnableTrimAnalyzer>true</EnableTrimAnalyzer>
+  </PropertyGroup>
+
   <PropertyGroup Condition="'$(Configuration)'=='Release'">
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Arise.FileSyncer.Core" Version="2.5.1" />
+    <PackageReference Include="Arise.FileSyncer.Core" Version="2.7.0" />
   </ItemGroup>
 
 </Project>

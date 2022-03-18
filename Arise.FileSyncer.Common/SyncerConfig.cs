@@ -1,19 +1,71 @@
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Net.Sockets;
 using Arise.FileSyncer.Core;
+using Arise.FileSyncer.Serializer;
 
 namespace Arise.FileSyncer.Common
 {
     public class SyncerConfig
     {
-        public class ConfigStorage
+        public class ConfigStorage : IBinarySerializable
         {
             public SyncerPeerSettings PeerSettings { get; set; }
             public KeyValuePair<Guid, Guid>[] DeviceKeys { get; set; }
             public KeyValuePair<Guid, SyncProfile>[] Profiles { get; set; }
             public AddressFamily ListenerAddressFamily { get; set; }
             public int DiscoveryPort { get; set; }
+
+            public void Deserialize(Stream stream)
+            {
+                PeerSettings = stream.Read<SyncerPeerSettings>();
+
+                int deviceKeysLength = stream.ReadInt32();
+                List<KeyValuePair<Guid, Guid>> deviceKeysList = new();
+                for (int i = 0; i < deviceKeysLength; i++)
+                {
+                    Guid key = stream.ReadGuid();
+                    Guid value = stream.ReadGuid();
+                    deviceKeysList.Add(new(key, value));
+                }
+                DeviceKeys = deviceKeysList.ToArray();
+
+                int profilesLength = stream.ReadInt32();
+                List<KeyValuePair<Guid, SyncProfile>> profilesList = new();
+                for (int i = 0; i < profilesLength; i++)
+                {
+                    Guid key = stream.ReadGuid();
+                    SyncProfile value = stream.Read<SyncProfile>();
+                    profilesList.Add(new(key, value));
+                }
+                Profiles = profilesList.ToArray();
+
+                ListenerAddressFamily = (AddressFamily)stream.ReadInt32();
+                DiscoveryPort = stream.ReadInt32();
+            }
+
+            public void Serialize(Stream stream)
+            {
+                stream.WriteAFS(PeerSettings);
+
+                stream.WriteAFS(DeviceKeys.Length);
+                foreach (var kvp in DeviceKeys)
+                {
+                    stream.WriteAFS(kvp.Key);
+                    stream.WriteAFS(kvp.Value);
+                }
+
+                stream.WriteAFS(Profiles.Length);
+                foreach (var kvp in Profiles)
+                {
+                    stream.WriteAFS(kvp.Key);
+                    stream.WriteAFS(kvp.Value);
+                }
+
+                stream.WriteAFS((int)ListenerAddressFamily);
+                stream.WriteAFS(DiscoveryPort);
+            }
         }
 
         public AddressFamily ListenerAddressFamily { get; set; }

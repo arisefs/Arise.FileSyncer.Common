@@ -1,5 +1,6 @@
+using System;
 using System.IO;
-using System.Text.Json;
+using Arise.FileSyncer.Serializer;
 
 namespace Arise.FileSyncer.Common
 {
@@ -8,56 +9,65 @@ namespace Arise.FileSyncer.Common
         private static readonly object saveLock = new();
 
         /// <summary>
-        /// Loads the file as Json into a specified object
+        /// Loads the file as IBinarySerializable into a specified object
         /// </summary>
         /// <typeparam name="T">Type of the object</typeparam>
         /// <param name="obj">Object to load the data into</param>
         /// <param name="path">Path to the file</param>
-        /// <returns>Does succeeded</returns>
-        public static bool Load<T>(string path, ref T obj) where T : class
+        /// <returns>Success</returns>
+        public static bool Load<T>(string path, ref T obj) where T : IBinarySerializable, new()
         {
             try
             {
-                byte[] jsonUtf8Bytes = null;
+                if (obj == null) obj = new T();
 
                 lock (saveLock)
                 {
-                    jsonUtf8Bytes = File.ReadAllBytes(path);
+                    using var stream = File.OpenRead(path);
+                    obj.Deserialize(stream);
+                    stream.Close();
                 }
-
-                var utf8Reader = new Utf8JsonReader(jsonUtf8Bytes);
-                obj = JsonSerializer.Deserialize<T>(ref utf8Reader);
             }
-            catch { return false; }
+            catch (Exception ex)
+            {
+                Log.Verbose($"SaveFile load failed: {ex}");
+                return false;
+            }
 
             return true;
         }
 
         /// <summary>
-        /// Saves the object as a Json file
+        /// Saves the object as a IBinarySerializable file
         /// </summary>
         /// <typeparam name="T">Type of the object</typeparam>
         /// <param name="obj">Object to save</param>
         /// <param name="path">Path to the file</param>
-        /// <returns>Does succeeded</returns>
-        public static bool Save<T>(string path, T obj) where T : class
+        /// <returns>Success</returns>
+        public static bool Save<T>(string path, T obj) where T : IBinarySerializable
         {
             try
             {
-                byte[] jsonUtf8Bytes = JsonSerializer.SerializeToUtf8Bytes(obj);
                 string tempPath = path + ".tmp";
 
                 lock (saveLock)
                 {
                     // Write the data into a temp file
-                    File.WriteAllBytes(tempPath, jsonUtf8Bytes);
+                    using var stream = File.Open(tempPath, FileMode.Create);
+                    obj.Serialize(stream);
+                    stream.Flush();
+                    stream.Close();
 
                     // Move the temp file to the main location
                     if (File.Exists(path)) File.Delete(path);
                     File.Move(tempPath, path);
                 }
             }
-            catch { return false; }
+            catch (Exception ex)
+            {
+                Log.Verbose($"SaveFile save failed: {ex}");
+                return false;
+            }
 
             return true;
         }

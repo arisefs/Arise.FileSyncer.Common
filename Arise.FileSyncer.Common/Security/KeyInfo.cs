@@ -1,8 +1,10 @@
+using System.IO;
 using System.Security.Cryptography;
+using Arise.FileSyncer.Serializer;
 
 namespace Arise.FileSyncer.Common.Security
 {
-    public class KeyInfo
+    public class KeyInfo : IBinarySerializable
     {
         // Public Key Info
         public byte[] Modulus { get; set; }
@@ -70,6 +72,30 @@ namespace Arise.FileSyncer.Common.Security
                 P = rsaKeyInfo.P,
                 Q = rsaKeyInfo.Q,
             };
+        }
+
+        public void Deserialize(Stream stream)
+        {
+            Modulus = stream.ReadByteArray();
+            Exponent = stream.ReadByteArray();
+            D = stream.ReadByteArray();
+            DP = stream.ReadByteArray();
+            DQ = stream.ReadByteArray();
+            InverseQ = stream.ReadByteArray();
+            P = stream.ReadByteArray();
+            Q = stream.ReadByteArray();
+        }
+
+        public void Serialize(Stream stream)
+        {
+            stream.WriteAFS(Modulus);
+            stream.WriteAFS(Exponent);
+            stream.WriteAFS(D);
+            stream.WriteAFS(DP);
+            stream.WriteAFS(DQ);
+            stream.WriteAFS(InverseQ);
+            stream.WriteAFS(P);
+            stream.WriteAFS(Q);
         }
     }
 }
