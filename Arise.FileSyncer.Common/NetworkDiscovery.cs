@@ -23,7 +23,7 @@ namespace Arise.FileSyncer.Common
         private volatile bool isActive = false;
         private Task task = null;
 
-        public const long NetVersion = 3;
+        public const long NetVersion = 4;
 
         public NetworkDiscovery(SyncerConfig syncerConfig, SyncerPeer syncerPeer, NetworkListener listener)
         {

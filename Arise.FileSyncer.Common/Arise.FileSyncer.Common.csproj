@@ -21,7 +21,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Arise.FileSyncer.Core" Version="2.7.1" />
+    <PackageReference Include="Arise.FileSyncer.Core" Version="3.0.1" />
   </ItemGroup>
 
 </Project>
