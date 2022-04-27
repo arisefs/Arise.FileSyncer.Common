@@ -14,17 +14,22 @@ namespace Arise.FileSyncer.Common
         public Stream SenderStream => encryptedStream;
         public Stream ReceiverStream => encryptedStream;
 
-        private readonly TcpClient tcpClient;
+        private readonly NetworkStream netStream;
         private readonly EncryptedStream encryptedStream;
 
-        public NetworkConnection(TcpClient tcpClient, Guid id, KeyInfo keyInfo)
+        public NetworkConnection(NetworkStream netStream, Guid id, KeyInfo keyInfo)
         {
-            this.tcpClient = tcpClient;
+            this.netStream = netStream;
             Id = id;
+
+            SetupSocket(netStream.Socket);
+            
+            Log.Warning($"NetStream SendBuffer: {netStream.Socket.SendBufferSize}");
+            Log.Warning($"NetStream ReceiveBuffer: {netStream.Socket.ReceiveBufferSize}");
 
             try
             {
-                var stream = tcpClient.GetStream();
+                var stream = netStream;
 
                 // If we have a keyinfo then we are the initiator
                 if (keyInfo != null)
@@ -79,6 +84,16 @@ namespace Arise.FileSyncer.Common
             }
         }
 
+        private static void SetupSocket(Socket socket)
+        {
+            // Set the buffer sizes, just in case
+            socket.SendBufferSize = Math.Max(socket.SendBufferSize, 16384);
+            socket.ReceiveBufferSize = Math.Max(socket.ReceiveBufferSize, 16384);
+
+            // Use NoDelay to fix network performance issues
+            socket.NoDelay = true;
+        }
+
         #region IDisposable Support
         private bool disposedValue;
 
@@ -90,7 +105,7 @@ namespace Arise.FileSyncer.Common
                 {
                     // Dispose managed state (managed objects)
                     encryptedStream.Dispose();
-                    tcpClient.Dispose();
+                    netStream.Dispose();
                 }
 
                 disposedValue = true;

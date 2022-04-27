@@ -29,8 +29,8 @@ namespace Benchmark
             SyncData.CreateDirectory(index);
 
             // Local settings
-            Guid localId = new(new byte[] { 9, 9, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, index });
-            SyncerPeerSettings settings = new(localId, $"TestPeer:{index}", SupportTimestamp);
+            var localId = new Guid(new byte[] { 9, 9, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, index });
+            var settings = new SyncerPeerSettings(localId, $"TestPeer:{index}", SupportTimestamp);
 
             // Add remote device
             int remoteIndex = (index == 0) ? 1 : 0;
