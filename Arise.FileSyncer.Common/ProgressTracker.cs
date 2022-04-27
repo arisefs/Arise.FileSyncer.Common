@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Threading;
 using Arise.FileSyncer.Core;
 
@@ -79,6 +80,8 @@ namespace Arise.FileSyncer.Common
 
         public ProgressTracker(SyncerPeer peer, int updateInterval = 1000, int avarageNum = 10)
         {
+            Debug.Assert(avarageNum > 1, "Avarage number must be bigger than 1.");
+
             this.peer = peer ?? throw new ArgumentNullException(nameof(peer));
             this.avarageNum = avarageNum;
             speedInterval = updateInterval / 1000.0;
