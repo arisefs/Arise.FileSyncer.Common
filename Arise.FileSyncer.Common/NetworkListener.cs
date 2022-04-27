@@ -12,11 +12,11 @@ namespace Arise.FileSyncer.Common
     public class NetworkListener : IDisposable
     {
         public bool IsActive => isActive;
-        public IPEndPoint LocalEndpoint => tcpListener?.LocalEndPoint as IPEndPoint;
+        public IPEndPoint LocalEndpoint => tcpListener?.LocalEndpoint as IPEndPoint;
 
         private readonly SyncerPeer syncerPeer;
         private readonly KeyConfig keyConfig;
-        private readonly Socket tcpListener;
+        private readonly TcpListener tcpListener;
         private volatile bool isActive = false;
 
         public NetworkListener(SyncerPeer syncerPeer, KeyConfig keyConfig, AddressFamily addressFamily)
@@ -28,11 +28,10 @@ namespace Arise.FileSyncer.Common
 
             try
             {
-                tcpListener = new Socket(addressFamily, SocketType.Stream, ProtocolType.Tcp);
-                tcpListener.Bind(new IPEndPoint(address, 0));
-                tcpListener.Listen();
+                tcpListener = new TcpListener(address, 0);
+                tcpListener.Start();
 
-                Task.Run(ConnectionAccepter);
+                Task.Factory.StartNew(ConnectionAccepter, TaskCreationOptions.LongRunning);
             }
             catch (Exception ex)
             {
@@ -45,7 +44,7 @@ namespace Arise.FileSyncer.Common
         {
             try
             {
-                tcpListener?.Dispose();
+                tcpListener?.Stop();
             }
             catch (Exception ex)
             {
@@ -53,38 +52,30 @@ namespace Arise.FileSyncer.Common
             }
         }
 
-        private async Task ConnectionAccepter()
+        private void ConnectionAccepter()
         {
+            TcpClient client = null;
             isActive = true;
 
-            while (true)
+            try
             {
-                NetworkStream netStream;
+                while (true)
+                {
+                    client = tcpListener.AcceptTcpClient();
+                    Guid remoteDeviceId = client.GetStream().ReadGuid();
 
-                try
-                {
-                    Socket socket = await tcpListener.AcceptAsync();
-                    netStream = new NetworkStream(socket, true);
-                }
-                catch (Exception ex)
-                {
-                    Log.Verbose($"{this}: Failed to accept socket: {ex.Message}");
-                    break;
-                }
-
-                try
-                {
                     Log.Info($"{this}: Accepting connection...");
-                    Guid remoteDeviceId = netStream.ReadGuid();
-                    AddClientToSyncer(remoteDeviceId, netStream, keyConfig.KeyInfo);
+
+                    AddClientToSyncer(remoteDeviceId, client, keyConfig.KeyInfo);
+                    client = null;
                 }
-                catch (Exception ex)
-                {
-                    Log.Verbose($"{this}: Failed to accept connection: {ex.Message}");
-                    await netStream.DisposeAsync();
-                    continue;
-                }
-                    
+            }
+            catch (Exception ex)
+            {
+                Log.Verbose($"{this}: Failed to accept connection: {ex.Message}");
+
+                // Release resources on error
+                client?.Dispose();
             }
 
             isActive = false;
@@ -92,37 +83,34 @@ namespace Arise.FileSyncer.Common
 
         public void Connect(Guid id, IPAddress address, int port)
         {
-            Socket socket = null;
+            TcpClient client = new();
             Log.Info($"{this}: Connecting to {address}:{port}...");
 
             try
             {
-                socket = new Socket(address.AddressFamily, SocketType.Stream, ProtocolType.Tcp);
-
-                if (!socket.ConnectAsync(new IPEndPoint(address, port)).Wait(5000))
+                if (!client.ConnectAsync(address, port).Wait(5000))
                 {
                     throw new Exception("Failed to connect. Timeout.");
                 }
 
-                var netStream = new NetworkStream(socket, true);
-                netStream.WriteAFS(syncerPeer.Settings.DeviceId);
-                AddClientToSyncer(id, netStream, null);
+                client.GetStream().WriteAFS(syncerPeer.Settings.DeviceId);
+                AddClientToSyncer(id, client, null);
             }
             catch (Exception ex)
             {
                 Log.Verbose($"{this}: Failed to connect to {address}:{port} - {ex.Message}");
 
                 // Release resources on error
-                socket?.Dispose();
+                client.Dispose();
             }
         }
 
-        private void AddClientToSyncer(Guid remoteDeviceId, NetworkStream netStream, KeyInfo keyInfo)
+        private void AddClientToSyncer(Guid remoteDeviceId, TcpClient client, KeyInfo keyInfo)
         {
+            NetworkConnection connection = new(client, remoteDeviceId, keyInfo);
+
             try
             {
-                var connection = new NetworkConnection(netStream, remoteDeviceId, keyInfo);
-
                 if (!syncerPeer.AddConnection(connection))
                 {
                     Log.Verbose($"{this}: Connection has not been added");
@@ -131,6 +119,9 @@ namespace Arise.FileSyncer.Common
             catch (Exception ex)
             {
                 Log.Warning($"{this}: Failed to add connection: {ex.Message}");
+
+                // Release resources on error
+                connection?.Dispose();
             }
         }
 
