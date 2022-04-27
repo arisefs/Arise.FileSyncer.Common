@@ -22,6 +22,9 @@ namespace Arise.FileSyncer.Common
             this.tcpClient = tcpClient;
             Id = id;
 
+            // Fix performance
+            SetupSocket();
+
             try
             {
                 var stream = tcpClient.GetStream();
@@ -77,6 +80,16 @@ namespace Arise.FileSyncer.Common
                 Log.Debug($"{this}: Connection encryption initialization failed! Ex.:{ex.Message}");
                 throw;
             }
+        }
+
+        private void SetupSocket()
+        {
+            // Set the buffer sizes, just in case
+            tcpClient.SendBufferSize = Math.Max(tcpClient.SendBufferSize, 16384);
+            tcpClient.ReceiveBufferSize = Math.Max(tcpClient.ReceiveBufferSize, 16384);
+
+            // Use NoDelay to fix network performance issues
+            tcpClient.NoDelay = true;
         }
 
         #region IDisposable Support
