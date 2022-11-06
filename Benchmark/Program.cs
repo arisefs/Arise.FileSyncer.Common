@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.IO;
 using System.Linq;
 using Arise.FileSyncer;
@@ -10,9 +10,7 @@ namespace Benchmark
     {
         static void Main()
         {
-            Log.Info = (m)=>{};
-            Log.Debug = (m)=>{};
-            Log.Verbose = (m)=>{};
+            Log.SetLogger(new BenchLogger());
 
             Console.WriteLine("Arise FileSyncer Benchmark");
 
@@ -37,6 +35,17 @@ namespace Benchmark
                 var current = progress.Current / 1_000_000;
                 var maximum = progress.Maximum / 1_000_000;
                 Console.WriteLine($"Current speed: {speed:##0.000} MB/s | {current} MB / {maximum} MB");
+            }
+        }
+    }
+
+    class BenchLogger : Logger
+    {
+        public override void Log(LogLevel level, string message)
+        {
+            if (level < LogLevel.Info)
+            {
+                base.Log(level, message);
             }
         }
     }

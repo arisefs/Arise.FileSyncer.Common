@@ -19,7 +19,7 @@ namespace Arise.FileSyncer.Common
         {
             try
             {
-                if (obj == null) obj = new T();
+                obj ??= new T();
 
                 lock (saveLock)
                 {

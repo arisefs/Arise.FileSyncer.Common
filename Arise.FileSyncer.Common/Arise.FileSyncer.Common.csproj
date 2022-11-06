@@ -2,6 +2,11 @@
 
   <PropertyGroup>
     <TargetFramework>net6.0</TargetFramework>
+    <IsTrimmable>true</IsTrimmable>
+    <EnableTrimAnalyzer>true</EnableTrimAnalyzer>
+  </PropertyGroup>
+
+  <PropertyGroup>
     <Description>Glue for the FileSyncer Core</Description>
     <PackageProjectUrl>https://github.com/arisefs/Arise.FileSyncer.Common</PackageProjectUrl>
     <RepositoryUrl>https://github.com/arisefs/Arise.FileSyncer.Common</RepositoryUrl>
@@ -11,17 +16,12 @@
     <Company />
   </PropertyGroup>
 
-  <PropertyGroup>
-    <IsTrimmable>true</IsTrimmable>
-    <EnableTrimAnalyzer>true</EnableTrimAnalyzer>
-  </PropertyGroup>
-
   <PropertyGroup Condition="'$(Configuration)'=='Release'">
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Arise.FileSyncer.Core" Version="3.1.0" />
+    <PackageReference Include="Arise.FileSyncer.Core" Version="3.2.1" />
   </ItemGroup>
 
 </Project>
