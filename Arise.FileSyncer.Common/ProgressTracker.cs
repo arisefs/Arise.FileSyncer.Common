@@ -70,7 +70,7 @@ namespace Arise.FileSyncer.Common
 
     public class ProgressTracker : IDisposable
     {
-        public event EventHandler<ProgressUpdateEventArgs> ProgressUpdate;
+        public event EventHandler<ProgressUpdateEventArgs>? ProgressUpdate;
 
         private readonly ConcurrentDictionary<Guid, ProgressArchive> progressArchive;
         private readonly SyncerPeer peer;
@@ -105,7 +105,7 @@ namespace Arise.FileSyncer.Common
             }
         }
 
-        private void ProgressTimerCallback(object state)
+        private void ProgressTimerCallback(object? state)
         {
             UpdateArchives();
 
@@ -121,12 +121,12 @@ namespace Arise.FileSyncer.Common
             OnProgressUpdate(progresses);
         }
 
-        private void Peer_ConnectionAdded(object sender, ConnectionEventArgs e)
+        private void Peer_ConnectionAdded(object? sender, ConnectionEventArgs e)
         {
             progressArchive.TryAdd(e.Id, new ProgressArchive(avarageNum));
         }
 
-        private void Peer_ConnectionRemoved(object sender, ConnectionEventArgs e)
+        private void Peer_ConnectionRemoved(object? sender, ConnectionEventArgs e)
         {
             progressArchive.TryRemove(e.Id, out var _);
         }
@@ -191,14 +191,14 @@ namespace Arise.FileSyncer.Common
 
             public bool CalcStatus(Guid id, double speedInterval, out ProgressStatus status)
             {
-                Progress mostRecent = Archive[LastIndex];
+                Progress mostRecent = Archive[LastIndex]; // TODO array without elements set isnt null??
                 if (mostRecent == null)
                 {
                     status = new ProgressStatus();
                     return false;
                 }
 
-                Progress lastProgress = null;
+                Progress? lastProgress = null;
                 long speedOverall = 0;
                 long speedCount = 0;
 

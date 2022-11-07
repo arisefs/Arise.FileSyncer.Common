@@ -16,12 +16,12 @@ namespace Arise.FileSyncer.Common
         private readonly SyncerPeer syncerPeer;
         private readonly NetworkListener listener;
 
-        private Socket discoverySocket;
-        private IPEndPoint sendEndPoint;
-        private IPEndPoint receiveEndPoint;
+        private Socket? discoverySocket;
+        private IPEndPoint sendEndPoint = new(IPAddress.Any, 0); // Default value before update
+        private IPEndPoint receiveEndPoint = new(IPAddress.Any, 0); // Default value before update
         private readonly byte[] message;
         private volatile bool isActive = false;
-        private Task task = null;
+        private Task? task = null;
 
         public const long NetVersion = 4;
 
@@ -42,7 +42,7 @@ namespace Arise.FileSyncer.Common
         {
             try
             {
-                discoverySocket.SendTo(message, sendEndPoint);
+                discoverySocket!.SendTo(message, sendEndPoint);
             }
             catch
             {
@@ -75,7 +75,7 @@ namespace Arise.FileSyncer.Common
         {
             try
             {
-                discoverySocket.Bind(receiveEndPoint);
+                discoverySocket!.Bind(receiveEndPoint);
                 byte[] buffer = new byte[message.Length];
                 isActive = true;
 

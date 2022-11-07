@@ -17,7 +17,7 @@ namespace Arise.FileSyncer.Common
         private readonly TcpClient tcpClient;
         private readonly EncryptedStream encryptedStream;
 
-        public NetworkConnection(TcpClient tcpClient, Guid id, KeyInfo keyInfo)
+        public NetworkConnection(TcpClient tcpClient, Guid id, KeyInfo? keyInfo)
         {
             this.tcpClient = tcpClient;
             Id = id;
@@ -36,8 +36,8 @@ namespace Arise.FileSyncer.Common
                     rsa.ImportParameters(keyInfo.GetParameters());
 
                     // Send public key
-                    stream.WriteAFS(keyInfo.Modulus);
-                    stream.WriteAFS(keyInfo.Exponent);
+                    stream.WriteAFS(keyInfo.Modulus ?? throw new NullReferenceException("Keyinfo Modulus is null"));
+                    stream.WriteAFS(keyInfo.Exponent ?? throw new NullReferenceException("Keyinfo Exponent is null"));
                     stream.Flush();
 
                     // Receive and flip seeds

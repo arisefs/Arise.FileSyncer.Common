@@ -11,9 +11,9 @@ namespace Arise.FileSyncer.Common
     {
         public class ConfigStorage : IBinarySerializable
         {
-            public SyncerPeerSettings PeerSettings { get; set; }
-            public KeyValuePair<Guid, Guid>[] DeviceKeys { get; set; }
-            public KeyValuePair<Guid, SyncProfile>[] Profiles { get; set; }
+            public SyncerPeerSettings PeerSettings { get; set; } = new SyncerPeerSettings();
+            public KeyValuePair<Guid, Guid>[] DeviceKeys { get; set; } = Array.Empty<KeyValuePair<Guid, Guid>>();
+            public KeyValuePair<Guid, SyncProfile>[] Profiles { get; set; } = Array.Empty<KeyValuePair<Guid, SyncProfile>>();
             public AddressFamily ListenerAddressFamily { get; set; }
             public int DiscoveryPort { get; set; }
 
@@ -111,9 +111,9 @@ namespace Arise.FileSyncer.Common
         /// <summary>
         /// Loads the config from the disk
         /// </summary>
-        public LoadResult Load(SyncerPeerSettings refSettings, out ConfigStorage config)
+        public LoadResult Load(SyncerPeerSettings refSettings, out ConfigStorage configStorate)
         {
-            config = null;
+            ConfigStorage? config = null;
 
             if (SaveFileUtility.Load(configPath, ref config))
             {
@@ -143,12 +143,13 @@ namespace Arise.FileSyncer.Common
                 }
 
                 ApplyConfig(config);
+                configStorate = config;
                 return result;
             }
 
             // If loading the config file failed
-            config = GetDefaultConfig(refSettings);
-            ApplyConfig(config);
+            configStorate = GetDefaultConfig(refSettings);
+            ApplyConfig(configStorate);
             return LoadResult.Created;
         }
 

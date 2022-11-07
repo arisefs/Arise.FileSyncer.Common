@@ -12,11 +12,11 @@ namespace Arise.FileSyncer.Common
     public class NetworkListener : IDisposable
     {
         public bool IsActive => isActive;
-        public IPEndPoint LocalEndpoint => tcpListener?.LocalEndpoint as IPEndPoint;
+        public IPEndPoint LocalEndpoint => tcpListener?.LocalEndpoint as IPEndPoint ?? new(IPAddress.Any, 0);
 
         private readonly SyncerPeer syncerPeer;
         private readonly KeyConfig keyConfig;
-        private readonly TcpListener tcpListener;
+        private readonly TcpListener? tcpListener;
         private volatile bool isActive = false;
 
         public NetworkListener(SyncerPeer syncerPeer, KeyConfig keyConfig, AddressFamily addressFamily)
@@ -54,14 +54,14 @@ namespace Arise.FileSyncer.Common
 
         private void ConnectionAccepter()
         {
-            TcpClient client = null;
+            TcpClient? client = null;
             isActive = true;
 
             try
             {
                 while (true)
                 {
-                    client = tcpListener.AcceptTcpClient();
+                    client = tcpListener!.AcceptTcpClient();
                     Guid remoteDeviceId = client.GetStream().ReadGuid();
 
                     Log.Info($"{this}: Accepting connection...");
@@ -105,7 +105,7 @@ namespace Arise.FileSyncer.Common
             }
         }
 
-        private void AddClientToSyncer(Guid remoteDeviceId, TcpClient client, KeyInfo keyInfo)
+        private void AddClientToSyncer(Guid remoteDeviceId, TcpClient client, KeyInfo? keyInfo)
         {
             NetworkConnection connection = new(client, remoteDeviceId, keyInfo);
 

@@ -1,3 +1,4 @@
+using System;
 using System.IO;
 using System.Security.Cryptography;
 using Arise.FileSyncer.Serializer;
@@ -7,16 +8,16 @@ namespace Arise.FileSyncer.Common.Security
     public class KeyInfo : IBinarySerializable
     {
         // Public Key Info
-        public byte[] Modulus { get; set; }
-        public byte[] Exponent { get; set; }
+        public byte[]? Modulus { get; set; }
+        public byte[]? Exponent { get; set; }
 
         // Private Key Info
-        public byte[] D { get; set; }
-        public byte[] DP { get; set; }
-        public byte[] DQ { get; set; }
-        public byte[] InverseQ { get; set; }
-        public byte[] P { get; set; }
-        public byte[] Q { get; set; }
+        private byte[]? D;
+        private byte[]? DP;
+        private byte[]? DQ;
+        private byte[]? InverseQ;
+        private byte[]? P;
+        private byte[]? Q;
 
         public KeyInfo() { }
 
@@ -88,14 +89,14 @@ namespace Arise.FileSyncer.Common.Security
 
         public void Serialize(Stream stream)
         {
-            stream.WriteAFS(Modulus);
-            stream.WriteAFS(Exponent);
-            stream.WriteAFS(D);
-            stream.WriteAFS(DP);
-            stream.WriteAFS(DQ);
-            stream.WriteAFS(InverseQ);
-            stream.WriteAFS(P);
-            stream.WriteAFS(Q);
+            stream.WriteAFS(Modulus ?? throw new NullReferenceException("Modulus is null"));
+            stream.WriteAFS(Exponent ?? throw new NullReferenceException("Exponent is null"));
+            stream.WriteAFS(D ?? throw new NullReferenceException("D is null"));
+            stream.WriteAFS(DP ?? throw new NullReferenceException("DP is null"));
+            stream.WriteAFS(DQ ?? throw new NullReferenceException("DQ is null"));
+            stream.WriteAFS(InverseQ ?? throw new NullReferenceException("InverseQ is null"));
+            stream.WriteAFS(P ?? throw new NullReferenceException("P is null"));
+            stream.WriteAFS(Q ?? throw new NullReferenceException("Q is null"));
         }
     }
 }

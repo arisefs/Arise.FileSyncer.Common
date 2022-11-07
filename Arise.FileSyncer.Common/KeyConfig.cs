@@ -4,13 +4,13 @@ namespace Arise.FileSyncer.Common
 {
     public class KeyConfig
     {
-        public KeyInfo KeyInfo { get => keyInfo; }
+        public KeyInfo? KeyInfo { get => keyInfo; }
 
         private const string Filename = "key";
         private readonly string keyPath;
         private readonly int rsaKeySize;
 
-        private KeyInfo keyInfo;
+        private KeyInfo? keyInfo;
 
         public KeyConfig() : this(2048) { }
 
@@ -25,7 +25,15 @@ namespace Arise.FileSyncer.Common
         /// </summary>
         public bool Save()
         {
-            return SaveFileUtility.Save(keyPath, keyInfo);
+            if (keyInfo != null)
+            {
+                return SaveFileUtility.Save(keyPath, keyInfo);
+            }
+            else
+            {
+                Log.Error("Failed to save KeyConfig, KeyInfo is null");
+                return false;
+            }
         }
 
         /// <summary>

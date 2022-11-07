@@ -1,4 +1,5 @@
 using System;
+using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using Arise.FileSyncer.Serializer;
 
@@ -15,7 +16,7 @@ namespace Arise.FileSyncer.Common
         /// <param name="obj">Object to load the data into</param>
         /// <param name="path">Path to the file</param>
         /// <returns>Success</returns>
-        public static bool Load<T>(string path, ref T obj) where T : IBinarySerializable, new()
+        public static bool Load<T>(string path, [NotNullWhen(returnValue: true)] ref T? obj) where T : IBinarySerializable, new()
         {
             try
             {

@@ -1,4 +1,3 @@
-using System;
 using System.IO;
 using Arise.FileSyncer;
 using Arise.FileSyncer.Core.Helpers;
