@@ -7,7 +7,7 @@ using Arise.FileSyncer.Core;
 
 namespace Arise.FileSyncer.Common
 {
-    public struct ProgressStatus : ISyncProgress
+    public readonly struct ProgressStatus : ISyncProgress
     {
         /// <summary>
         /// The ID of the connection

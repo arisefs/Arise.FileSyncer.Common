@@ -134,7 +134,7 @@ namespace Arise.FileSyncer.Common
 
         private void CreateSocket()
         {
-            if (discoverySocket != null) discoverySocket.Dispose();
+            discoverySocket?.Dispose();
 
             try
             {
